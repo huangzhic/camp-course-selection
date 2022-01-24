@@ -50,4 +50,5 @@ func Database(connString string) {
 
 	//数据迁移
 	DB.AutoMigrate(&TMember{})
+	DB.AutoMigrate(&TCourse{})
 }

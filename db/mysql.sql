@@ -30,4 +30,5 @@ CREATE TABLE t_student_course(
 )  COMMENT = '学生课程关系表';
 
 CREATE unique INDEX idx_t_member_user_name ON t_member(USER_NAME)
-CREATE INDEX idx_t_course_tid ON t_course(TEACHER_ID)
+CREATE INDEX idx_t_course_teacher_id ON t_course(TEACHER_ID)
+

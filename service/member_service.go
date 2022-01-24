@@ -14,6 +14,7 @@ type MemberService struct {
 }
 
 // Register 用户注册
+
 func (m *MemberService) CreateMember(memberVo *vo.CreateMemberRequest) util.R {
 	member := model.TMember{
 		Nickname: memberVo.Nickname,
@@ -23,7 +24,7 @@ func (m *MemberService) CreateMember(memberVo *vo.CreateMemberRequest) util.R {
 	}
 
 	// 表单验证
-	if err := m.CreateMemberValid(memberVo); err != nil {
+	if err := CreateMemberValid(memberVo); err != nil {
 		return *err
 	}
 	// 雪花ID
@@ -47,7 +48,8 @@ func (m *MemberService) CreateMember(memberVo *vo.CreateMemberRequest) util.R {
 }
 
 // valid 用户注册验证表单
-func (m *MemberService) CreateMemberValid(memberVo *vo.CreateMemberRequest) *util.R {
+
+func CreateMemberValid(memberVo *vo.CreateMemberRequest) *util.R {
 	count := int64(0)
 	model.DB.Model(&model.TMember{}).Where("user_name = ?", memberVo.Username).Count(&count)
 	if count > 0 {
