@@ -12,7 +12,7 @@ import (
 func CurrentUser() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		session := sessions.Default(c)
-		uid := session.Get("user_id")
+		uid := session.Get("user_id") // user_id 一一对应用户  一一对应  mysql数据
 		if uid != nil {
 			user, err := model.GetUser(uid)
 			if err == nil {

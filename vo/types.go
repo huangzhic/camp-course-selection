@@ -25,7 +25,9 @@ const (
 	StudentHasNoCourse ErrNo = 13 // 学生没有课程
 	StudentHasCourse   ErrNo = 14 // 学生有课程
 
-	UnknownError ErrNo = 255 // 未知错误
+	CourseHasExisted          int = 15  // 课程已经存在
+	StudentCannotBindOrUnBind int = 16  // 课程不能与学生进行绑定或解绑等的相关操作
+	UnknownError              int = 255 // 未知错误
 )
 
 type ResponseMeta struct {
@@ -66,10 +68,10 @@ const (
 // 只有管理员才能添加
 
 type CreateMemberRequest struct {
-	Nickname string // required，不小于 4 位 不超过 20 位
-	Username string // required，只支持大小写，长度不小于 8 位 不超过 20 位
-	Password string // required，同时包括大小写、数字，长度不少于 8 位 不超过 20 位
-	UserType int    // required, 枚举值
+	Nickname string `form:"nick_name" json:"nick_name" binding:"required"` // required，不小于 4 位 不超过 20 位
+	Username string `form:"user_name" json:"user_name" binding:"required"` // required，只支持大小写，长度不小于 8 位 不超过 20 位
+	Password string `form:"password" json:"password" binding:"required"`   // required，同时包括大小写、数字，长度不少于 8 位 不超过 20 位
+	UserType int    `form:"user_type" json:"user_type" binding:"required"` // required, 枚举值
 }
 
 type CreateMemberResponse struct {
@@ -132,8 +134,8 @@ type DeleteMemberResponse struct {
 // 登录
 
 type LoginRequest struct {
-	Username string
-	Password string
+	Username string `form:"user_name" json:"user_name" binding:"required"` // 注意表单中的key是 username
+	Password string `form:"password" json:"password" binding:"required"`
 }
 
 // 登录成功后需要 Set-Cookie("camp-session", ${value})
@@ -174,8 +176,8 @@ type WhoAmIResponse struct {
 // 创建课程
 // Method: Post
 type CreateCourseRequest struct {
-	Name string
-	Cap  int
+	Name string `form:"name" json:"name" binding:"required"`
+	Cap  int    `form:"cap" json:"cap" binding:"required"`
 }
 
 type CreateCourseResponse struct {
@@ -188,7 +190,7 @@ type CreateCourseResponse struct {
 // 获取课程
 // Method: Get
 type GetCourseRequest struct {
-	CourseID string
+	CourseID string `form:"course_id" json:"course_id" binding:"required""`
 }
 
 type GetCourseResponse struct {
@@ -201,8 +203,8 @@ type GetCourseResponse struct {
 // 注：这里的 teacherID 不需要做已落库校验
 // 一个老师可以绑定多个课程 , 不过，一个课程只能绑定在一个老师下面
 type BindCourseRequest struct {
-	CourseID  string
-	TeacherID string
+	CourseID  string `form:"course_id" json:"course_id" binding:"required"`
+	TeacherID string `form:"teacher_id" json:"teacher_id" binding:"required"`
 }
 
 type BindCourseResponse struct {
@@ -212,8 +214,8 @@ type BindCourseResponse struct {
 // 老师解绑课程
 // Method： Post
 type UnbindCourseRequest struct {
-	CourseID  string
-	TeacherID string
+	CourseID  string `form:"course_id" json:"course_id" binding:"required"`
+	TeacherID string `form:"teacher_id" json:"teacher_id" binding:"required"`
 }
 
 type UnbindCourseResponse struct {
@@ -223,7 +225,7 @@ type UnbindCourseResponse struct {
 // 获取老师下所有课程
 // Method：Get
 type GetTeacherCourseRequest struct {
-	TeacherID string
+	TeacherID string `form:"teacher_id" json:"teacher_id" binding:"required"`
 }
 
 type GetTeacherCourseResponse struct {
@@ -236,7 +238,7 @@ type GetTeacherCourseResponse struct {
 // 排课求解器，使老师绑定课程的最优解， 老师有且只能绑定一个课程
 // Method： Post
 type ScheduleCourseRequest struct {
-	TeacherCourseRelationShip map[string][]string // key 为 teacherID , val 为老师期望绑定的课程 courseID 数组
+	TeacherCourseRelationShip map[string][]string `form:"teacher_course_relation_ship" json:"teacher_course_relation_ship" binding:"required"` // key 为 teacherID , val 为老师期望绑定的课程 courseID 数组
 }
 
 type ScheduleCourseResponse struct {

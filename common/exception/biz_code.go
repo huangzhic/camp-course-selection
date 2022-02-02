@@ -23,5 +23,29 @@ const (
 	StudentHasNoCourse int = 13 // 学生没有课程
 	StudentHasCourse   int = 14 // 学生有课程
 
-	UnknownError int = 255 // 未知错误
+	CourseHasExisted          int = 15  // 课程已经存在
+	StudentCannotBindOrUnBind int = 16  // 课程不能与学生进行绑定或解绑等的相关操作
+	UnknownError              int = 255 // 未知错误
 )
+
+var Code2String = map[int]string{
+	0:  "操作成功",
+	1:  "参数不合法",
+	2:  "该 Username 已存在",
+	3:  "用户已删除",
+	4:  "用户不存在",
+	5:  "密码错误",
+	6:  "用户未登录",
+	7:  "课程已满",
+	8:  "课程已绑定过",
+	9:  "课程未绑定过",
+	10: "没有操作权限",
+	11: "学生不存在",
+	12: "课程不存在",
+	13: "学生没有课程",
+	14: "学生有课程",
+
+	15:  "课程已经存在",
+	16:  "课程不能与学生进行绑定或解绑等的相关操作",
+	255: "未知错误",
+}
