@@ -17,8 +17,9 @@ VOLUME /tmp
 ENV REDIS_ADDR="180.184.74.124:6379"
 ENV REDIS_PW=""
 ENV REDIS_DB=""
-ENV MysqlDSN="root:bytedancecamp@tcp(180.184.74.124:3306)/camp_base?charset=utf8mb4&parseTime=True&loc=Local"
+ENV MYSQL_DSN="root:bytedancecamp@tcp(180.184.74.124:3306)/camp_base?charset=utf8mb4&parseTime=True&loc=Local"
 ENV GIN_MODE="release"
+ENV LOG_LEVEL="info"
 
 COPY --from=build /camp-course-selection/api_server /usr/bin/api_server
 
