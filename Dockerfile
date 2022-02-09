@@ -14,10 +14,10 @@ EXPOSE 3000
 MAINTAINER huangzc 540955198@qq.com
 VOLUME /tmp
 
-ENV REDIS_ADDR="180.184.74.124:6379"
+ENV REDIS_ADDR="172.17.0.1:6379"
 ENV REDIS_PW=""
 ENV REDIS_DB=""
-ENV MYSQL_DSN="root:bytedancecamp@tcp(180.184.74.124:3306)/camp_base?charset=utf8mb4&parseTime=True&loc=Local"
+ENV MYSQL_DSN="root:bytedancecamp@tcp(172.17.0.1:3306)/camp_base?charset=utf8mb4&parseTime=True&loc=Local"
 ENV GIN_MODE="release"
 ENV LOG_LEVEL="info"
 
