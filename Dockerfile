@@ -1,6 +1,6 @@
 FROM golang as build
 
-ENV GOPROXY=https://goproxy.io
+ENV GOPROXY=https://goproxy.cn
 
 ADD . /camp-course-selection
 
