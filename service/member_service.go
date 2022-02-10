@@ -84,7 +84,7 @@ func (m *MemberService) GetMember(memberVo *vo.GetMemberRequest) (model.TMember,
 
 func (m *MemberService) GetMemberList(memberVo *vo.GetMemberListRequest) ([]model.TMember, error) {
 	var members []model.TMember
-	result := model.DB.Find(&members)
+	result := model.DB.Limit(memberVo.Limit).Offset(memberVo.Offset).Find(&members)
 	return members, result.Error
 }
 
