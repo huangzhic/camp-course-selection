@@ -22,9 +22,11 @@ func (m *MemberService) CreateMember(memberVo *vo.CreateMemberRequest) util.R {
 		UserType: memberVo.UserType,
 		Status:   constants.Active,
 	}
+	//检查权限
 	if member.UserType != constants.Admin {
 		return *util.Error(exception.PermDenied)
 	}
+	//检查参数是否正确
 	if nick_size := len(member.Nickname); nick_size > 20 || nick_size < 4 {
 		return *util.Error(exception.ParamInvalid)
 	}
@@ -78,8 +80,50 @@ func (m *MemberService) GetMember(memberVo *vo.GetMemberRequest) (model.TMember,
 	return member, result.Error
 }
 
+// 批量获取用户
+
 func (m *MemberService) GetMemberList(memberVo *vo.GetMemberListRequest) ([]model.TMember, error) {
 	var members []model.TMember
 	result := model.DB.Find(&members)
 	return members, result.Error
+}
+
+// 更新用户信息
+
+func (m *MemberService) UpdateMember(memberVo *vo.UpdateMemberRequest) util.R {
+	if err := m.MemberValid(memberVo.UserID); err != nil {
+		return *err
+	}
+	if err := model.DB.Model(&model.TMember{}).Where("user_id = ?", memberVo.UserID).Update("nick_name", memberVo.Nickname).Error; err == nil {
+		return *util.Ok(memberVo.UserID)
+	} else {
+		return *util.Error(exception.UnknownError)
+	}
+}
+
+// 判断用户是否存在
+
+func (m *MemberService) MemberValid(userId string) *util.R {
+	count := int64(0)
+	model.DB.Model(&model.TMember{}).Where("user_id=?", userId).Count(&count)
+	if count == 0 {
+		return util.Error(exception.UserNotExisted)
+	}
+	return nil
+}
+
+// 软删除
+
+func (m *MemberService) DeleteMember(memberVo *vo.DeleteMemberRequest) util.R {
+	if err := m.MemberValid(memberVo.UserID); err != nil {
+		return *err
+	}
+	var member model.TMember
+	model.DB.First(&member, memberVo.UserID)
+	member.Status = 0
+	if err := model.DB.Where("user_id", memberVo.UserID).Delete(&model.TMember{}).Error; err == nil {
+		return *util.Ok(memberVo.UserID)
+	} else {
+		return *util.Error(exception.UnknownError)
+	}
 }

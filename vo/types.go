@@ -1,5 +1,7 @@
 package vo
 
+import "camp-course-selection/model"
+
 // 说明：
 // 1. 所提到的「位数」均以字节长度为准
 // 2. 所有的 ID 均为 int64（以 string 方式表现）
@@ -84,7 +86,7 @@ type CreateMemberResponse struct {
 // 获取成员信息
 
 type GetMemberRequest struct {
-	UserID string
+	UserID string `form:"user_id" json:"user_id" binding:"required"` //required
 }
 
 // 如果用户已删除请返回已删除状态码，不存在请返回不存在状态码
@@ -97,22 +99,22 @@ type GetMemberResponse struct {
 // 批量获取成员信息
 
 type GetMemberListRequest struct {
-	Offset int
-	Limit  int
+	Offset int `form:"offset" json:"offset" binding:"required"`
+	Limit  int `form:"limit" json:"limit" binding:"required"`
 }
 
 type GetMemberListResponse struct {
 	Code ErrNo
 	Data struct {
-		MemberList []TMember
+		MemberList []model.TMember
 	}
 }
 
 // 更新成员信息
 
 type UpdateMemberRequest struct {
-	UserID   string
-	Nickname string
+	UserID   string `form:"user_id" json:"user_id" binding:"required"`
+	Nickname string `form:"nick_name" json:"nick_name" binding:"required"`
 }
 
 type UpdateMemberResponse struct {
@@ -123,7 +125,7 @@ type UpdateMemberResponse struct {
 // 成员删除后，该成员不能够被登录且不应该不可见，ID 不可复用
 
 type DeleteMemberRequest struct {
-	UserID string
+	UserID string `form:"user_id" json:"user_id" binding:"required"`
 }
 
 type DeleteMemberResponse struct {

@@ -27,8 +27,8 @@ func NewRouter() *gin.Engine {
 		auth.GET("/member", api.GetMember)
 		auth.POST("/member/create", api.CreateMember)
 		auth.GET("/member/list", api.GetMemberList)
-		auth.POST("/member/update", api.)
-		auth.POST("/member/delete")
+		auth.POST("/member/update", api.UpdateMember)
+		auth.POST("/member/delete", api.DeleteMember)
 
 		// 登录
 		auth.POST("/auth/logout", api.Logout)
