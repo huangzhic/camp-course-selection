@@ -45,8 +45,8 @@ func NewRouter() *gin.Engine {
 		auth.POST("/course/schedule", api.ScheduleCourse)
 
 		// 抢课
-		auth.POST("/student/book_course")
-		auth.GET("/student/course")
+		auth.POST("/student/book_course",api.Course)
+		auth.GET("/student/course", api.BookCourse)
 	}
 	return r
 }

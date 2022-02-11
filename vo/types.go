@@ -247,8 +247,8 @@ type ScheduleCourseResponse struct {
 }
 
 type BookCourseRequest struct {
-	StudentID string
-	CourseID  string
+	StudentID int64
+	CourseID  int64
 }
 
 // 课程已满返回 CourseNotAvailable
@@ -258,7 +258,7 @@ type BookCourseResponse struct {
 }
 
 type GetStudentCourseRequest struct {
-	StudentID string
+	StudentID int64
 }
 
 type GetStudentCourseResponse struct {
@@ -267,3 +267,4 @@ type GetStudentCourseResponse struct {
 		CourseList []TCourse
 	}
 }
+
