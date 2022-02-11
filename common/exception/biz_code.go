@@ -25,6 +25,9 @@ const (
 
 	CourseHasExisted          int = 15  // 课程已经存在
 	StudentCannotBindOrUnBind int = 16  // 课程不能与学生进行绑定或解绑等的相关操作
+
+	Coursed int = 20 // 已经选过课了
+	
 	UnknownError              int = 255 // 未知错误
 )
 
@@ -47,5 +50,7 @@ var Code2String = map[int]string{
 
 	15:  "课程已经存在",
 	16:  "课程不能与学生进行绑定或解绑等的相关操作",
+
+	20: "已经选过课了",
 	255: "未知错误",
 }
