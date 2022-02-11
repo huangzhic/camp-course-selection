@@ -22,8 +22,6 @@ func (m *MemberService) CreateMember(memberVo *vo.CreateMemberRequest) util.R {
 		UserType: memberVo.UserType,
 		Status:   constants.Active,
 	}
-<<<<<<< HEAD
-=======
 	//检查权限
 	if member.UserType != constants.Admin {
 		return *util.Error(exception.PermDenied)
@@ -38,7 +36,6 @@ func (m *MemberService) CreateMember(memberVo *vo.CreateMemberRequest) util.R {
 	if pass_size := len(member.Password); pass_size > 20 || pass_size < 8 {
 		return *util.Error(exception.ParamInvalid)
 	}
->>>>>>> origin/main
 
 	// 表单验证
 	if err := CreateMemberValid(memberVo); err != nil {
@@ -74,8 +71,6 @@ func CreateMemberValid(memberVo *vo.CreateMemberRequest) *util.R {
 	}
 	return nil
 }
-<<<<<<< HEAD
-=======
 
 // 获取用户信息
 
@@ -132,4 +127,3 @@ func (m *MemberService) DeleteMember(memberVo *vo.DeleteMemberRequest) util.R {
 		return *util.Error(exception.UnknownError)
 	}
 }
->>>>>>> origin/main

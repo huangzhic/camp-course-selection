@@ -11,9 +11,5 @@ func main() {
 
 	// 装载路由
 	r := server.NewRouter()
-<<<<<<< HEAD
-	r.Run(":4000")
-=======
 	r.Run(":3000")
->>>>>>> origin/main
 }

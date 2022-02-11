@@ -3,17 +3,11 @@ package api
 import (
 	"camp-course-selection/common/exception"
 	"camp-course-selection/common/util"
-<<<<<<< HEAD
-	"camp-course-selection/service"
-	"camp-course-selection/vo"
-	"github.com/gin-gonic/gin"
-=======
 	"camp-course-selection/model"
 	"camp-course-selection/service"
 	"camp-course-selection/vo"
 	"github.com/gin-gonic/gin"
 	"strconv"
->>>>>>> origin/main
 )
 
 var memberSerivce service.MemberService
@@ -28,8 +22,6 @@ func CreateMember(c *gin.Context) {
 		c.JSON(200, util.Error(exception.UnknownError))
 	}
 }
-<<<<<<< HEAD
-=======
 
 //GetMember 获取用户信息接口
 func GetMember(c *gin.Context) {
@@ -86,4 +78,3 @@ func DeleteMember(c *gin.Context) {
 		c.JSON(200, util.Error(exception.UnknownError))
 	}
 }
->>>>>>> origin/main

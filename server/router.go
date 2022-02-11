@@ -20,35 +20,6 @@ func NewRouter() *gin.Engine {
 	g := r.Group("/api/v1")
 
 	g.POST("/auth/login", api.Login) // 登录后设置了session   user_id   与CurrentUser 中的user_id相呼应
-<<<<<<< HEAD
-	auth := g.Group("")
-	auth.Use(middleware.AuthRequired())
-	{
-		// 成员管理
-		auth.GET("/member")
-		auth.POST("/member/create", api.CreateMember)
-		auth.GET("/member/list")
-		auth.POST("/member/update")
-		auth.POST("/member/delete")
-
-		// 登录
-		auth.POST("/auth/logout", api.Logout)
-
-		auth.GET("/auth/whoami", api.Whoami)
-
-		// 排课
-		auth.POST("/course/create", api.CreateCourse)
-		auth.GET("/course/get", api.GetCourse)
-
-		auth.POST("/teacher/bind_course", api.BindCourse)
-		auth.POST("/teacher/unbind_course", api.UnBindCourse)
-		auth.GET("/teacher/get_course", api.GetTeacherCourse)
-		auth.POST("/course/schedule", api.ScheduleCourse)
-
-		// 抢课
-		auth.POST("/student/book_course",api.Course)
-		auth.GET("/student/course", api.BookCourse)
-=======
 
 	// 成员管理
 	g.GET("/member", api.GetMember)
@@ -66,15 +37,14 @@ func NewRouter() *gin.Engine {
 	g.POST("/course/schedule", api.ScheduleCourse)
 
 	// 抢课
-	g.POST("/student/book_course")
-	g.GET("/student/course")
+	g.POST("/student/book_course",api.Course)
+	g.GET("/student/course",api.BookCourse)
 	auth := g.Group("")
 	auth.Use(middleware.AuthRequired())
 	{
 		// 登录
 		auth.POST("/auth/logout", api.Logout)
 		auth.GET("/auth/whoami", api.Whoami)
->>>>>>> origin/main
 	}
 	return r
 }

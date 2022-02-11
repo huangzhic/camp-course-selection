@@ -1,10 +1,6 @@
 module camp-course-selection
 
-<<<<<<< HEAD
-go 1.16
-=======
 go 1.17
->>>>>>> origin/main
 
 require (
 	github.com/bwmarrin/snowflake v0.3.0
@@ -14,12 +10,6 @@ require (
 	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/joho/godotenv v1.4.0
 	github.com/onsi/gomega v1.18.1 // indirect
-<<<<<<< HEAD
-	golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a
-	gorm.io/driver/mysql v1.2.3
-	gorm.io/gorm v1.22.5
-)
-=======
 	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97
 	gorm.io/driver/mysql v1.2.3
 	gorm.io/gorm v1.22.5
@@ -50,4 +40,3 @@ require (
 	google.golang.org/protobuf v1.26.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
->>>>>>> origin/main
