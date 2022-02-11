@@ -70,10 +70,10 @@ const (
 // 只有管理员才能添加
 
 type CreateMemberRequest struct {
-	Nickname string `form:"nick_name" json:"nick_name" binding:"required"` // required，不小于 4 位 不超过 20 位
-	Username string `form:"user_name" json:"user_name" binding:"required"` // required，只支持大小写，长度不小于 8 位 不超过 20 位
-	Password string `form:"password" json:"password" binding:"required"`   // required，同时包括大小写、数字，长度不少于 8 位 不超过 20 位
-	UserType int    `form:"user_type" json:"user_type" binding:"required"` // required, 枚举值
+	Nickname string // required，不小于 4 位 不超过 20 位
+	Username string // required，只支持大小写，长度不小于 8 位 不超过 20 位
+	Password string // required，同时包括大小写、数字，长度不少于 8 位 不超过 20 位
+	UserType int    // required, 枚举值
 }
 
 type CreateMemberResponse struct {
@@ -86,7 +86,7 @@ type CreateMemberResponse struct {
 // 获取成员信息
 
 type GetMemberRequest struct {
-	UserID string `form:"user_id" json:"user_id" binding:"required"` //required
+	UserID string //required
 }
 
 // 如果用户已删除请返回已删除状态码，不存在请返回不存在状态码
@@ -99,8 +99,8 @@ type GetMemberResponse struct {
 // 批量获取成员信息
 
 type GetMemberListRequest struct {
-	Offset int `form:"offset" json:"offset" binding:"required"`
-	Limit  int `form:"limit" json:"limit" binding:"required"`
+	Offset int
+	Limit  int
 }
 
 type GetMemberListResponse struct {
@@ -113,8 +113,8 @@ type GetMemberListResponse struct {
 // 更新成员信息
 
 type UpdateMemberRequest struct {
-	UserID   string `form:"user_id" json:"user_id" binding:"required"`
-	Nickname string `form:"nick_name" json:"nick_name" binding:"required"`
+	UserID   string
+	Nickname string
 }
 
 type UpdateMemberResponse struct {
@@ -125,7 +125,7 @@ type UpdateMemberResponse struct {
 // 成员删除后，该成员不能够被登录且不应该不可见，ID 不可复用
 
 type DeleteMemberRequest struct {
-	UserID string `form:"user_id" json:"user_id" binding:"required"`
+	UserID string
 }
 
 type DeleteMemberResponse struct {
@@ -136,8 +136,8 @@ type DeleteMemberResponse struct {
 // 登录
 
 type LoginRequest struct {
-	Username string `form:"user_name" json:"user_name" binding:"required"` // 注意表单中的key是 username
-	Password string `form:"password" json:"password" binding:"required"`
+	Username string // 注意表单中的key是 username
+	Password string
 }
 
 // 登录成功后需要 Set-Cookie("camp-session", ${value})
@@ -178,8 +178,8 @@ type WhoAmIResponse struct {
 // 创建课程
 // Method: Post
 type CreateCourseRequest struct {
-	Name string `form:"name" json:"name" binding:"required"`
-	Cap  int    `form:"cap" json:"cap" binding:"required"`
+	Name string
+	Cap  int
 }
 
 type CreateCourseResponse struct {
@@ -192,7 +192,7 @@ type CreateCourseResponse struct {
 // 获取课程
 // Method: Get
 type GetCourseRequest struct {
-	CourseID string `form:"course_id" json:"course_id" binding:"required""`
+	CourseID string
 }
 
 type GetCourseResponse struct {
@@ -205,8 +205,8 @@ type GetCourseResponse struct {
 // 注：这里的 teacherID 不需要做已落库校验
 // 一个老师可以绑定多个课程 , 不过，一个课程只能绑定在一个老师下面
 type BindCourseRequest struct {
-	CourseID  string `form:"course_id" json:"course_id" binding:"required"`
-	TeacherID string `form:"teacher_id" json:"teacher_id" binding:"required"`
+	CourseID  string
+	TeacherID string
 }
 
 type BindCourseResponse struct {
@@ -216,8 +216,8 @@ type BindCourseResponse struct {
 // 老师解绑课程
 // Method： Post
 type UnbindCourseRequest struct {
-	CourseID  string `form:"course_id" json:"course_id" binding:"required"`
-	TeacherID string `form:"teacher_id" json:"teacher_id" binding:"required"`
+	CourseID  string
+	TeacherID string
 }
 
 type UnbindCourseResponse struct {
@@ -227,7 +227,7 @@ type UnbindCourseResponse struct {
 // 获取老师下所有课程
 // Method：Get
 type GetTeacherCourseRequest struct {
-	TeacherID string `form:"teacher_id" json:"teacher_id" binding:"required"`
+	TeacherID string
 }
 
 type GetTeacherCourseResponse struct {
@@ -240,7 +240,7 @@ type GetTeacherCourseResponse struct {
 // 排课求解器，使老师绑定课程的最优解， 老师有且只能绑定一个课程
 // Method： Post
 type ScheduleCourseRequest struct {
-	TeacherCourseRelationShip map[string][]string `form:"teacher_course_relation_ship" json:"teacher_course_relation_ship" binding:"required"` // key 为 teacherID , val 为老师期望绑定的课程 courseID 数组
+	TeacherCourseRelationShip map[string][]string // key 为 teacherID , val 为老师期望绑定的课程 courseID 数组
 }
 
 type ScheduleCourseResponse struct {
