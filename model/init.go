@@ -16,7 +16,10 @@ var DB *gorm.DB
 
 // Database 在中间件中初始化mysql链接
 func Database(connString string) {
+<<<<<<< HEAD
 	util.Log().Info("connString = %v", connString)
+=======
+>>>>>>> origin/main
 	// 初始化GORM日志配置
 	newLogger := logger.New(
 		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer

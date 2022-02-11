@@ -18,7 +18,10 @@ func (TMember) TableName() string {
 }
 
 // GetUser 用ID获取用户
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/main
 func GetUser(ID interface{}) (TMember, error) {
 	var user TMember
 	result := DB.First(&user, ID)
