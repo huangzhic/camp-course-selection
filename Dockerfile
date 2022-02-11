@@ -24,3 +24,5 @@ ENV LOG_LEVEL="error"
 COPY --from=build /camp-course-selection/api_server /usr/bin/api_server
 
 RUN chmod +x /usr/bin/api_server
+
+ENTRYPOINT ["api_server"]
