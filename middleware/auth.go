@@ -1,9 +1,8 @@
 package middleware
 
 import (
-	"camp-course-selection/common/exception"
-	"camp-course-selection/common/util"
 	"camp-course-selection/model"
+	"camp-course-selection/vo"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 )
@@ -33,7 +32,7 @@ func AuthRequired() gin.HandlerFunc {
 			}
 		}
 
-		c.JSON(200, util.Error(exception.LoginRequired))
+		c.JSON(200, vo.ResponseMeta{Code: vo.LoginRequired})
 		c.Abort()
 	}
 }
