@@ -41,13 +41,11 @@ func Whoami(c *gin.Context) {
 	res := vo.WhoAmIResponse{}
 	if user, _ := c.Get("user"); user != nil {
 		if u, ok := user.(*model.TMember); ok {
-			data := vo.TMember{}
-			data.UserID = strconv.FormatInt(u.UserID, 10)
-			data.Username = u.UserName
-			data.Nickname = u.Nickname
-			data.UserType = vo.UserType(u.UserType)
 			res.Code = vo.OK
-			res.Data = data
+			res.Data.UserID = strconv.FormatInt(u.UserID, 10)
+			res.Data.Username = u.UserName
+			res.Data.Nickname = u.Nickname
+			res.Data.UserType = vo.UserType(u.UserType)
 			c.JSON(200, res)
 			return
 		}
