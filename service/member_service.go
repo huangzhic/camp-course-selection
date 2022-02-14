@@ -46,7 +46,7 @@ func (m *MemberService) CreateMember(memberVo *vo.CreateMemberRequest, c *gin.Co
 	member := model.TMember{
 		Nickname: memberVo.Nickname,
 		UserName: memberVo.Username,
-		UserType: memberVo.UserType,
+		UserType: int(memberVo.UserType),
 		Status:   constants.Active,
 	}
 	member.UserID = int64(id)
@@ -88,12 +88,17 @@ func CreateMemberValid(memberVo *vo.CreateMemberRequest) (code vo.ErrNo) {
 // GetMember 获取用户信息
 func (m *MemberService) GetMember(memberVo *vo.GetMemberRequest) (res vo.GetMemberResponse) {
 	var member model.TMember
+	tMember := vo.TMember{}
 	if err := model.DB.First(&member, memberVo.UserID).Error; err == nil {
 		if member.Status == 0 {
 			res.Code = vo.UserHasDeleted
 		} else {
 			res.Code = vo.OK
-			res.Data = member
+			tMember.UserID = strconv.FormatInt(member.UserID, 10)
+			tMember.Username = member.UserName
+			tMember.Nickname = member.Nickname
+			tMember.UserType = vo.UserType(member.UserType)
+			res.Data = tMember
 		}
 	} else {
 		res.Code = vo.UserNotExisted

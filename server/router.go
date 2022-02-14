@@ -37,8 +37,8 @@ func NewRouter() *gin.Engine {
 	g.POST("/course/schedule", api.ScheduleCourse)
 
 	// 抢课
-	g.POST("/student/book_course", api.Course)
-	g.GET("/student/course", api.BookCourse)
+	g.POST("/student/book_course", api.BookCourse)
+	g.GET("/student/course", api.GetStudentCourse)
 	auth := g.Group("")
 	auth.Use(middleware.AuthRequired())
 	{

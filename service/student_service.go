@@ -8,7 +8,7 @@ import (
 type StudentService struct {
 }
 
-func (m *StudentService) Course(v *vo.BookCourseRequest) (res vo.BookCourseResponse) {
+func (m *StudentService) BookCourse(v *vo.BookCourseRequest) (res vo.BookCourseResponse) {
 	course := model.StudentCourse{
 		STUDENT_ID: v.StudentID,
 		COURSE_ID:  v.CourseID,
@@ -21,7 +21,7 @@ func (m *StudentService) Course(v *vo.BookCourseRequest) (res vo.BookCourseRespo
 	return
 }
 
-func (m *StudentService) GetCourse(v *vo.GetStudentCourseRequest) (res vo.GetStudentCourseResponse) {
+func (m *StudentService) GetStudentCourse(v *vo.GetStudentCourseRequest) (res vo.GetStudentCourseResponse) {
 	courses := []model.StudentCourse{}
 	if err := model.DB.Where("STUDENT_ID = ?", v.StudentID).Find(&courses).Error; err != nil {
 		res.Code = vo.StudentNotExisted

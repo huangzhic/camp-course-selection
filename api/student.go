@@ -9,11 +9,11 @@ import (
 var studentService service.StudentService
 
 //抢课
-func Course(c *gin.Context) {
+func BookCourse(c *gin.Context) {
 	var courseVo vo.BookCourseRequest
 	res := vo.BookCourseResponse{}
 	if err := c.ShouldBind(&courseVo); err == nil {
-		res = studentService.Course(&courseVo)
+		res = studentService.BookCourse(&courseVo)
 		c.JSON(200, res)
 	} else {
 		res.Code = vo.UnknownError
@@ -21,12 +21,12 @@ func Course(c *gin.Context) {
 	}
 }
 
-//查询
-func BookCourse(c *gin.Context) {
+//查询学生课表
+func GetStudentCourse(c *gin.Context) {
 	var courseVo vo.GetStudentCourseRequest
 	res := vo.GetStudentCourseResponse{}
 	if err := c.ShouldBind(&courseVo); err == nil {
-		res = studentService.GetCourse(&courseVo)
+		res = studentService.GetStudentCourse(&courseVo)
 		c.JSON(200, res)
 	} else {
 		res.Code = vo.UnknownError

@@ -1,10 +1,5 @@
 package vo
 
-import (
-	"camp-course-selection/model"
-	"gorm.io/gorm"
-)
-
 // 说明：
 // 1. 所提到的「位数」均以字节长度为准
 // 2. 所有的 ID 均为 int64（以 string 方式表现）
@@ -73,11 +68,10 @@ const (
 // 只有管理员才能添加
 
 type CreateMemberRequest struct {
-	gorm.Model
-	Nickname string `json:"Nickname" binding:"required"` // 不小于 4 位 不超过 20 位
-	Username string `json:"Username" binding:"required"` // 只支持大小写，长度不小于 8 位 不超过 20 位
-	Password string `json:"Password" binding:"required"` // 同时包括大小写、数字，长度不少于 8 位 不超过 20 位
-	UserType int    `json:"UserType" binding:"required"` // 枚举值
+	Nickname string   // 不小于 4 位 不超过 20 位
+	Username string   // 只支持大小写，长度不小于 8 位 不超过 20 位
+	Password string   // 同时包括大小写、数字，长度不少于 8 位 不超过 20 位
+	UserType UserType // 枚举值
 }
 
 type CreateMemberResponse struct {
@@ -97,7 +91,7 @@ type GetMemberRequest struct {
 
 type GetMemberResponse struct {
 	Code ErrNo
-	Data model.TMember
+	Data TMember
 }
 
 // 批量获取成员信息
@@ -110,15 +104,15 @@ type GetMemberListRequest struct {
 type GetMemberListResponse struct {
 	Code ErrNo
 	Data struct {
-		MemberList []model.TMember
+		MemberList []TMember
 	}
 }
 
 // 更新成员信息
 
 type UpdateMemberRequest struct {
-	UserID   string `json:"UserID" binding:"required"`
-	Nickname string `json:"Nickname" binding:"required"`
+	UserID   string
+	Nickname string
 }
 
 type UpdateMemberResponse struct {
@@ -129,7 +123,7 @@ type UpdateMemberResponse struct {
 // 成员删除后，该成员不能够被登录且不应该不可见，ID 不可复用
 
 type DeleteMemberRequest struct {
-	UserID string `json:"UserID" binding:"required"`
+	UserID string
 }
 
 type DeleteMemberResponse struct {
@@ -140,8 +134,8 @@ type DeleteMemberResponse struct {
 // 登录
 
 type LoginRequest struct {
-	Username string `json:"Username" binding:"required"`
-	Password string `json:"Password" binding:"required"`
+	Username string
+	Password string
 }
 
 // 登录成功后需要 Set-Cookie("camp-session", ${value})
@@ -182,8 +176,8 @@ type WhoAmIResponse struct {
 // 创建课程
 // Method: Post
 type CreateCourseRequest struct {
-	Name string `json:"Name" binding:"required"`
-	Cap  int    `json:"Cap" binding:"required"`
+	Name string
+	Cap  int
 }
 
 type CreateCourseResponse struct {
@@ -253,8 +247,8 @@ type ScheduleCourseResponse struct {
 }
 
 type BookCourseRequest struct {
-	StudentID int64
-	CourseID  int64
+	StudentID string
+	CourseID  string
 }
 
 // 课程已满返回 CourseNotAvailable
@@ -264,7 +258,7 @@ type BookCourseResponse struct {
 }
 
 type GetStudentCourseRequest struct {
-	StudentID int64
+	StudentID string
 }
 
 type GetStudentCourseResponse struct {
