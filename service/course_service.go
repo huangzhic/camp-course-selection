@@ -13,43 +13,39 @@ import (
 type CourService struct{}
 
 //-----------创建课程-------------------------------------------------------
-func (m *CourService) CreateCourse(courseVo *vo.CreateCourseRequest) util.R {
+func (m *CourService) CreateCourse(courseVo *vo.CreateCourseRequest) (res vo.CreateCourseResponse) {
 	course := model.TCourse{
 		Name:        courseVo.Name,
 		CourseStock: courseVo.Cap,
 	}
 
 	// 表单验证
-	if err := CreateCourseValid(courseVo); err != nil {
-		return *err
+	if err := model.DB.Model(course).Where("name = ?", courseVo.Name).Find(&course); err != nil {
+		res.Code = vo.CourseHasExisted
+		res.Data.CourseID = string(course.CourseID)
+		return
 	}
+
 	// 雪花ID
 	node, err := snowflake.NewNode(1)
 	if err != nil {
 		util.Log().Error("generate SnowFlakeID Error: %v", err)
-		return *util.Error(exception.UnknownError)
+		res.Code = vo.UnknownError
+		return
 	}
+
 	id := node.Generate()
 	course.CourseID = int64(id)
-	// -1代表该课程未被绑定
-	course.TeacherID = "-1"
+	course.TeacherID = "-1" // -1代表该课程未被绑定
 
 	// 创建课程
-	fmt.Println(course)
 	if err := model.DB.Create(&course).Error; err != nil {
-		return *util.Error(exception.UnknownError)
+		res.Code = vo.UnknownError
+	} else {
+		res.Code = vo.OK
+		res.Data.CourseID = string(course.CourseID)
 	}
-
-	return *util.Ok(course.CourseID)
-}
-
-func CreateCourseValid(courseVo *vo.CreateCourseRequest) *util.R {
-	count := int64(0)
-	model.DB.Model(&model.TCourse{}).Where("name = ?", courseVo.Name).Count(&count)
-	if count > 0 {
-		return util.Error(exception.CourseHasExisted)
-	}
-	return nil
+	return
 }
 
 //-----------获取课程-------------------------------------------------------

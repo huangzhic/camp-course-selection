@@ -1,6 +1,7 @@
 package api
 
 import (
+	"camp-course-selection/common/util"
 	"camp-course-selection/service"
 	"camp-course-selection/vo"
 	"github.com/gin-gonic/gin"
@@ -15,7 +16,9 @@ func CreateCourse(c *gin.Context) {
 		res := courService.CreateCourse(&courseVo)
 		c.JSON(200, res)
 	} else {
-		c.JSON(200, util.Error(exception.UnknownError))
+		c.JSON(200, vo.CreateCourseResponse{
+			Code: vo.UnknownError,
+		})
 	}
 }
 

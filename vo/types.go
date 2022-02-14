@@ -141,7 +141,7 @@ type DeleteMemberResponse struct {
 
 type LoginRequest struct {
 	Username string `json:"Username" binding:"required"`
-	Password string `json:"Username" binding:"required"`
+	Password string `json:"Password" binding:"required"`
 }
 
 // 登录成功后需要 Set-Cookie("camp-session", ${value})
@@ -182,8 +182,8 @@ type WhoAmIResponse struct {
 // 创建课程
 // Method: Post
 type CreateCourseRequest struct {
-	Name string
-	Cap  int
+	Name string `json:"Name" binding:"required"`
+	Cap  int    `json:"Cap" binding:"required"`
 }
 
 type CreateCourseResponse struct {
