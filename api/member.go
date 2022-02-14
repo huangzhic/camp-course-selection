@@ -1,7 +1,6 @@
 package api
 
 import (
-	"camp-course-selection/common/exception"
 	"camp-course-selection/common/util"
 	"camp-course-selection/model"
 	"camp-course-selection/service"
@@ -14,12 +13,14 @@ var memberSerivce service.MemberService
 
 // CreateMember 用户注册接口
 func CreateMember(c *gin.Context) {
+	res := vo.CreateMemberResponse{}
 	var memberVo vo.CreateMemberRequest
 	if err := c.ShouldBind(&memberVo); err == nil {
-		res := memberSerivce.CreateMember(&memberVo)
+		res = memberSerivce.CreateMember(&memberVo, c)
 		c.JSON(200, res)
 	} else {
-		c.JSON(200, util.Error(exception.UnknownError))
+		res.Code = vo.UnknownError
+		c.JSON(200, res)
 	}
 }
 

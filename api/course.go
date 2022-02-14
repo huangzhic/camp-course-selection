@@ -1,8 +1,6 @@
 package api
 
 import (
-	"camp-course-selection/common/exception"
-	"camp-course-selection/common/util"
 	"camp-course-selection/service"
 	"camp-course-selection/vo"
 	"github.com/gin-gonic/gin"

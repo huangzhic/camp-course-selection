@@ -32,3 +32,5 @@ CREATE TABLE t_student_course(
 CREATE unique INDEX idx_t_member_user_name ON t_member(USER_NAME)
 CREATE INDEX idx_t_course_teacher_id ON t_course(TEACHER_ID)
 
+
+insert into t_member values(1000000000000000000,'JudgeAdmin','JudgeAdmin','$2a$10$D/CUcgjgqXAVd0aC8stqs.TTzgAY.AMm4i5n8rTr3IsBQFXwpy/Oe',1,0)

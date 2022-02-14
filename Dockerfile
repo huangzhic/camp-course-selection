@@ -20,6 +20,7 @@ ENV REDIS_DB=""
 ENV MYSQL_DSN="root:bytedancecamp@tcp(172.17.0.1:3306)/camp_base?charset=utf8mb4&parseTime=True&loc=Local"
 ENV GIN_MODE="release"
 ENV LOG_LEVEL="error"
+ENV SESSION_SECRET="bytecamp"
 
 COPY --from=build /camp-course-selection/api_server /usr/bin/api_server
 

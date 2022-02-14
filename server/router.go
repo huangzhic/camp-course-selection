@@ -23,7 +23,7 @@ func NewRouter() *gin.Engine {
 
 	// 成员管理
 	g.GET("/member", api.GetMember)
-	g.POST("/member/create", api.CreateMember)
+
 	g.GET("/member/list", api.GetMemberList)
 	g.POST("/member/update", api.UpdateMember)
 	g.POST("/member/delete", api.DeleteMember)
@@ -37,14 +37,16 @@ func NewRouter() *gin.Engine {
 	g.POST("/course/schedule", api.ScheduleCourse)
 
 	// 抢课
-	g.POST("/student/book_course",api.Course)
-	g.GET("/student/course",api.BookCourse)
+	g.POST("/student/book_course", api.Course)
+	g.GET("/student/course", api.BookCourse)
 	auth := g.Group("")
 	auth.Use(middleware.AuthRequired())
 	{
 		// 登录
 		auth.POST("/auth/logout", api.Logout)
 		auth.GET("/auth/whoami", api.Whoami)
+
+		auth.POST("/member/create", api.CreateMember)
 	}
 	return r
 }

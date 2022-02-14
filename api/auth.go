@@ -1,13 +1,12 @@
 package api
 
 import (
-	"camp-course-selection/common/exception"
-	"camp-course-selection/common/util"
 	"camp-course-selection/model"
 	"camp-course-selection/service"
 	"camp-course-selection/vo"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"strconv"
 )
 
 var authService service.AuthService
@@ -15,35 +14,44 @@ var authService service.AuthService
 // Login 用户登录接口
 
 func Login(c *gin.Context) {
+	res := vo.LoginResponse{}
 	var loginVo vo.LoginRequest
-	//fmt.Println("Login")
 	if err := c.ShouldBind(&loginVo); err == nil {
-		//fmt.Println("bind no problem")
-		res := authService.Login(&loginVo, c)
+		res = authService.Login(&loginVo, c)
 		c.JSON(200, res)
 	} else {
-		//fmt.Println("bind has a problem")
-		c.JSON(200, util.Error(exception.UnknownError))
+		res.Code = vo.UnknownError
+		c.JSON(200, res)
 	}
 }
 
 // Logout 用户登出
 func Logout(c *gin.Context) {
+	res := vo.LogoutResponse{}
 	s := sessions.Default(c)
 	s.Clear()
 	s.Save()
-	//c.SetCookie("camp_session", "1", -1, "/", "localhost", false, true)
-	c.JSON(200, &util.R{Code: 0, Message: "退出登录"})
+	res.Code = vo.OK
+	c.JSON(200, res)
 }
 
 // Whoami 获取当前用户
 
 func Whoami(c *gin.Context) {
+	res := vo.WhoAmIResponse{}
 	if user, _ := c.Get("user"); user != nil {
 		if u, ok := user.(*model.TMember); ok {
-			c.JSON(200, u)
+			data := vo.TMember{}
+			data.UserID = strconv.FormatInt(u.UserID, 10)
+			data.Username = u.UserName
+			data.Nickname = u.Nickname
+			data.UserType = vo.UserType(u.UserType)
+			res.Code = vo.OK
+			res.Data = data
+			c.JSON(200, res)
 			return
 		}
 	}
-	c.JSON(200, util.Error(exception.LoginRequired))
+	res.Code = vo.LoginRequired
+	c.JSON(200, res)
 }
