@@ -26,14 +26,15 @@ func (m *MemberService) CreateMember(memberVo *vo.CreateMemberRequest) util.R {
 	if member.UserType != constants.Admin {
 		return *util.Error(exception.PermDenied)
 	}
+
 	//检查参数是否正确
-	if nick_size := len(member.Nickname); nick_size > 20 || nick_size < 4 {
+	if nick_size := len(memberVo.Nickname); nick_size > 20 || nick_size < 4 {
 		return *util.Error(exception.ParamInvalid)
 	}
-	if name_size := len(member.UserName); name_size > 20 || name_size < 8 {
+	if name_size := len(memberVo.Username); name_size > 20 || name_size < 8 {
 		return *util.Error(exception.ParamInvalid)
 	}
-	if pass_size := len(member.Password); pass_size > 20 || pass_size < 8 {
+	if pass_size := len(memberVo.Password); pass_size > 20 || pass_size < 8 {
 		return *util.Error(exception.ParamInvalid)
 	}
 
@@ -41,6 +42,7 @@ func (m *MemberService) CreateMember(memberVo *vo.CreateMemberRequest) util.R {
 	if err := CreateMemberValid(memberVo); err != nil {
 		return *err
 	}
+
 	// 雪花ID
 	node, err := snowflake.NewNode(1)
 	if err != nil {
@@ -116,12 +118,11 @@ func (m *MemberService) MemberValid(userId string) *util.R {
 
 func (m *MemberService) DeleteMember(memberVo *vo.DeleteMemberRequest) util.R {
 	if err := m.MemberValid(memberVo.UserID); err != nil {
-		return *err
+		return *util.Error(exception.UserNotExisted)
 	}
 	var member model.TMember
 	model.DB.First(&member, memberVo.UserID)
-	member.Status = 0
-	if err := model.DB.Where("user_id", memberVo.UserID).Delete(&model.TMember{}).Error; err == nil {
+	if err := model.DB.Model(&member).Update("status", 0).Error; err == nil {
 		return *util.Ok(memberVo.UserID)
 	} else {
 		return *util.Error(exception.UnknownError)
