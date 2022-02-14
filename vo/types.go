@@ -1,6 +1,9 @@
 package vo
 
-import "camp-course-selection/model"
+import (
+	"camp-course-selection/model"
+	"gorm.io/gorm"
+)
 
 // 说明：
 // 1. 所提到的「位数」均以字节长度为准
@@ -70,10 +73,11 @@ const (
 // 只有管理员才能添加
 
 type CreateMemberRequest struct {
-	Nickname string // required，不小于 4 位 不超过 20 位
-	Username string // required，只支持大小写，长度不小于 8 位 不超过 20 位
-	Password string // required，同时包括大小写、数字，长度不少于 8 位 不超过 20 位
-	UserType int    // required, 枚举值
+	gorm.Model
+	Nickname string `json:"Nickname" binding:"required"` // 不小于 4 位 不超过 20 位
+	Username string `json:"Username" binding:"required"` // 只支持大小写，长度不小于 8 位 不超过 20 位
+	Password string `json:"Password" binding:"required"` // 同时包括大小写、数字，长度不少于 8 位 不超过 20 位
+	UserType int    `json:"UserType" binding:"required"` // 枚举值
 }
 
 type CreateMemberResponse struct {
@@ -125,7 +129,7 @@ type UpdateMemberResponse struct {
 // 成员删除后，该成员不能够被登录且不应该不可见，ID 不可复用
 
 type DeleteMemberRequest struct {
-	UserID string
+	UserID string `json:"UserID"`
 }
 
 type DeleteMemberResponse struct {

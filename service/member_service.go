@@ -2,13 +2,15 @@ package service
 
 import (
 	"camp-course-selection/common/constants"
+	"camp-course-selection/common/exception"
 	"camp-course-selection/common/util"
 	"camp-course-selection/model"
 	"camp-course-selection/vo"
+	"strconv"
+
 	"github.com/bwmarrin/snowflake"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
-	"strconv"
 )
 
 type MemberService struct {
@@ -34,6 +36,7 @@ func (m *MemberService) CreateMember(memberVo *vo.CreateMemberRequest, c *gin.Co
 		res.Code = code
 		return
 	}
+
 	// 雪花ID
 	node, err := snowflake.NewNode(1)
 	if err != nil {
@@ -129,12 +132,11 @@ func (m *MemberService) MemberValid(userId string) *util.R {
 
 func (m *MemberService) DeleteMember(memberVo *vo.DeleteMemberRequest) util.R {
 	if err := m.MemberValid(memberVo.UserID); err != nil {
-		return *err
+		return *util.Error(exception.UserNotExisted)
 	}
 	var member model.TMember
 	model.DB.First(&member, memberVo.UserID)
-	member.Status = 0
-	if err := model.DB.Where("user_id", memberVo.UserID).Delete(&model.TMember{}).Error; err == nil {
+	if err := model.DB.Model(&member).Update("status", 0).Error; err == nil {
 		return *util.Ok(memberVo.UserID)
 	} else {
 		return *util.Error(exception.UnknownError)
