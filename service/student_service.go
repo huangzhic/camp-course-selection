@@ -11,8 +11,8 @@ type StudentService struct {
 
 func (m *StudentService) BookCourse(v *vo.BookCourseRequest) (res vo.BookCourseResponse) {
 	var course model.StudentCourse
-	course.STUDENT_ID, _ = strconv.Atoi(v.StudentID)
-	course.COURSE_ID, _ = strconv.Atoi(v.CourseID)
+	course.STUDENT_ID, _ = strconv.ParseInt(v.StudentID, 10, 0)
+	course.COURSE_ID, _ = strconv.ParseInt(v.CourseID, 10, 0)
 
 	if err := model.DB.Create(&course).Error; err != nil {
 		res.Code = vo.CourseHasExisted
