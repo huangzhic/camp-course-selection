@@ -2,7 +2,6 @@ package service
 
 import (
 	"camp-course-selection/common/constants"
-	"camp-course-selection/common/exception"
 	"camp-course-selection/common/util"
 	"camp-course-selection/model"
 	"camp-course-selection/vo"
@@ -16,8 +15,7 @@ import (
 type MemberService struct {
 }
 
-// Register 用户注册
-
+// CreateMember 用户注册
 func (m *MemberService) CreateMember(memberVo *vo.CreateMemberRequest, c *gin.Context) (res vo.CreateMemberResponse) {
 	//获取session中的用户
 	user, _ := c.Get("user")
@@ -67,8 +65,7 @@ func (m *MemberService) CreateMember(memberVo *vo.CreateMemberRequest, c *gin.Co
 	return
 }
 
-// valid 用户注册验证表单
-
+// CreateMemberValid 用户注册验证表单
 func CreateMemberValid(memberVo *vo.CreateMemberRequest) (code vo.ErrNo) {
 	count := int64(0)
 	model.DB.Model(&model.TMember{}).Where("user_name = ?", memberVo.Username).Count(&count)
@@ -88,57 +85,76 @@ func CreateMemberValid(memberVo *vo.CreateMemberRequest) (code vo.ErrNo) {
 	return vo.OK
 }
 
-// 获取用户信息
-
+// GetMember 获取用户信息
 func (m *MemberService) GetMember(memberVo *vo.GetMemberRequest) (res vo.GetMemberResponse) {
 	var member model.TMember
-	result := model.DB.First(&member, memberVo.UserID)
-	return member, result.Error
+	if err := model.DB.First(&member, memberVo.UserID).Error; err == nil {
+		if member.Status == 0 {
+			res.Code = vo.UserHasDeleted
+		} else {
+			res.Code = vo.OK
+			res.Data = member
+		}
+	} else {
+		res.Code = vo.UserNotExisted
+	}
+	return
 }
 
-// 批量获取用户
-
-func (m *MemberService) GetMemberList(memberVo *vo.GetMemberListRequest) ([]model.TMember, error) {
-	var members []model.TMember
-	result := model.DB.Limit(memberVo.Limit).Offset(memberVo.Offset).Find(&members)
-	return members, result.Error
+// GetMemberList 批量获取用户
+func (m *MemberService) GetMemberList(memberVo *vo.GetMemberListRequest) (res vo.GetMemberListResponse) {
+	if err := model.DB.Limit(memberVo.Limit).Offset(memberVo.Offset).Find(&res.Data.MemberList); err == nil {
+		res.Code = vo.OK
+	} else {
+		res.Code = vo.ParamInvalid
+		res.Data.MemberList = nil
+	}
+	return
 }
 
 // 更新用户信息
 
-func (m *MemberService) UpdateMember(memberVo *vo.UpdateMemberRequest) util.R {
-	if err := m.MemberValid(memberVo.UserID); err != nil {
-		return *err
-	}
-	if err := model.DB.Model(&model.TMember{}).Where("user_id = ?", memberVo.UserID).Update("nick_name", memberVo.Nickname).Error; err == nil {
-		return *util.Ok(memberVo.UserID)
-	} else {
-		return *util.Error(exception.UnknownError)
-	}
-}
-
-// 判断用户是否存在
-
-func (m *MemberService) MemberValid(userId string) *util.R {
-	count := int64(0)
-	model.DB.Model(&model.TMember{}).Where("user_id=?", userId).Count(&count)
-	if count == 0 {
-		return util.Error(exception.UserNotExisted)
-	}
-	return nil
-}
-
-// 软删除
-
-func (m *MemberService) DeleteMember(memberVo *vo.DeleteMemberRequest) util.R {
-	if err := m.MemberValid(memberVo.UserID); err != nil {
-		return *util.Error(exception.UserNotExisted)
-	}
+func (m *MemberService) UpdateMember(memberVo *vo.UpdateMemberRequest) (res vo.UpdateMemberResponse) {
 	var member model.TMember
-	model.DB.First(&member, memberVo.UserID)
-	if err := model.DB.Model(&member).Update("status", 0).Error; err == nil {
-		return *util.Ok(memberVo.UserID)
-	} else {
-		return *util.Error(exception.UnknownError)
+
+	if err := model.DB.First(&member, memberVo.UserID).Error; err != nil {
+		res.Code = vo.UserNotExisted
+		return
 	}
+
+	if member.Status == 0 {
+		res.Code = vo.UserHasDeleted
+		return
+	}
+
+	if err := model.DB.Model(&member).Update("nick_name", memberVo.Nickname).Error; err == nil {
+		res.Code = vo.OK
+	} else {
+		res.Code = vo.UnknownError
+	}
+
+	return
+}
+
+// DeleteMember 软删除
+func (m *MemberService) DeleteMember(memberVo *vo.DeleteMemberRequest) (res vo.DeleteMemberResponse) {
+	var member model.TMember
+
+	if err := model.DB.First(&member, memberVo.UserID).Error; err != nil {
+		res.Code = vo.UserNotExisted
+		return
+	}
+
+	if member.Status == 0 {
+		res.Code = vo.UserHasDeleted
+		return
+	}
+
+	if err := model.DB.Model(&member).Update("status", 0).Error; err == nil {
+		res.Code = vo.OK
+	} else {
+		res.Code = vo.UnknownError
+	}
+
+	return
 }

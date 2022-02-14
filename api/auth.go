@@ -16,7 +16,7 @@ var authService service.AuthService
 func Login(c *gin.Context) {
 	res := vo.LoginResponse{}
 	var loginVo vo.LoginRequest
-	if err := c.ShouldBind(&loginVo); err == nil {
+	if err := c.ShouldBindJSON(&loginVo); err == nil {
 		res = authService.Login(&loginVo, c)
 		c.JSON(200, res)
 	} else {

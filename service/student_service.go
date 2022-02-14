@@ -1,7 +1,6 @@
 package service
 
 import (
-	"camp-course-selection/common/exception"
 	"camp-course-selection/common/util"
 	"camp-course-selection/model"
 	"camp-course-selection/vo"

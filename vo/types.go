@@ -97,7 +97,7 @@ type GetMemberRequest struct {
 
 type GetMemberResponse struct {
 	Code ErrNo
-	Data TMember
+	Data model.TMember
 }
 
 // 批量获取成员信息
@@ -117,8 +117,8 @@ type GetMemberListResponse struct {
 // 更新成员信息
 
 type UpdateMemberRequest struct {
-	UserID   string
-	Nickname string
+	UserID   string `json:"UserID" binding:"required"`
+	Nickname string `json:"Nickname" binding:"required"`
 }
 
 type UpdateMemberResponse struct {
@@ -129,7 +129,7 @@ type UpdateMemberResponse struct {
 // 成员删除后，该成员不能够被登录且不应该不可见，ID 不可复用
 
 type DeleteMemberRequest struct {
-	UserID string `json:"UserID"`
+	UserID string `json:"UserID" binding:"required"`
 }
 
 type DeleteMemberResponse struct {
@@ -140,8 +140,8 @@ type DeleteMemberResponse struct {
 // 登录
 
 type LoginRequest struct {
-	Username string // 注意表单中的key是 username
-	Password string
+	Username string `json:"Username" binding:"required"`
+	Password string `json:"Username" binding:"required"`
 }
 
 // 登录成功后需要 Set-Cookie("camp-session", ${value})

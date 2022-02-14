@@ -8,8 +8,8 @@ import (
 	"strconv"
 )
 
-type AuthService struct {
-}
+type AuthService struct{}
+
 type Data struct {
 	UserID string // int64 范围
 }
@@ -27,8 +27,6 @@ func (m *AuthService) Login(loginVo *vo.LoginRequest, c *gin.Context) (res vo.Lo
 
 	var member model.TMember
 
-	model.DB.Where("user_name = ?", loginVo.Username).First(&member)
-
 	if err := model.DB.Where("user_name = ?", loginVo.Username).First(&member).Error; err != nil {
 		res.Code = vo.UserNotExisted
 		return
@@ -38,7 +36,9 @@ func (m *AuthService) Login(loginVo *vo.LoginRequest, c *gin.Context) (res vo.Lo
 		res.Code = vo.WrongPassword
 		return
 	}
+
 	setSession(c, member)
+
 	res.Code = vo.OK
 	res.Data.UserID = strconv.FormatInt(member.UserID, 10)
 	return
