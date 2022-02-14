@@ -5,7 +5,6 @@ import (
 	"camp-course-selection/common/util"
 	"camp-course-selection/model"
 	"camp-course-selection/vo"
-	"fmt"
 	"github.com/bwmarrin/snowflake"
 	"strconv"
 )
@@ -66,114 +65,128 @@ func (m *CourService) GetCourse(v *vo.GetCourseRequest) (res vo.GetCourseRespons
 }
 
 //------------绑定课程-------------------------------------------------------
-func (m *CourService) BindCourseService(v *vo.BindCourseRequest) util.R {
-	if err := checkBindCourseAndTeacher(v); err == exception.OK {
-		return *util.Ok("绑定")
-	} else {
-		return *util.Error(err)
-	}
-}
-
-func checkBindCourseAndTeacher(v *vo.BindCourseRequest) int {
+func (m *CourService) BindCourseService(v *vo.BindCourseRequest) (res vo.BindCourseResponse) {
 	teacher := &model.TMember{}
 	course := &model.TCourse{}
+
 	// 检测老师是否正确
-	if err := model.DB.Where("user_id = ?", v.TeacherID).First(&teacher).Error; err == nil {
-		if teacher.UserType != constants.Teacher {
-			return exception.StudentCannotBindOrUnBind
-		}
-	} else {
-		return exception.UserNotExisted
+	if err := model.DB.Where("user_id = ?", v.TeacherID).First(&teacher).Error; err != nil {
+		res.Code = vo.UserNotExisted
+		return
 	}
+
+	if teacher.UserType != constants.Teacher {
+		res.Code = vo.NotTeacher
+		return
+	}
+
 	// 检查课程是否正确
-	if err := model.DB.Where("course_id = ?", v.CourseID).First(&course).Error; err == nil {
-		if course.TeacherID != "-1" {
-			return exception.CourseHasBound
-		}
-	} else {
-		return exception.CourseNotExisted
+	if err := model.DB.Where("course_id = ?", v.CourseID).First(&course).Error; err != nil {
+		res.Code = vo.CourseNotExisted
+		return
 	}
+
+	if course.TeacherID != "-1" {
+		res.Code = vo.CourseHasBound
+		return
+	}
+
 	// 绑定课程
-	course.TeacherID = strconv.FormatInt(int64(teacher.UserID), 10)
+	course.TeacherID = strconv.FormatInt(teacher.UserID, 10)
 	if err := model.DB.Model(&course).Update("teacher_id", course.TeacherID).Error; err == nil {
-		return exception.OK
+		res.Code = vo.OK
+	} else {
+		res.Code = vo.UnknownError
 	}
-	return exception.UnknownError
+	return
 }
 
 //-----------------解绑课程---------------------------------------------------
-func (m *CourService) UnBindCourseService(v *vo.UnbindCourseRequest) util.R {
-	if err := checkUnBindCourseAndTeacher(v); err == exception.OK {
-		return *util.Ok("解绑")
-	} else {
-		return *util.Error(err)
-	}
-}
-
-func checkUnBindCourseAndTeacher(v *vo.UnbindCourseRequest) int {
+func (m *CourService) UnBindCourseService(v *vo.UnbindCourseRequest) (res vo.UnbindCourseResponse) {
 	teacher := &model.TMember{}
 	course := &model.TCourse{}
+
 	// 检测老师是否正确
-	if err := model.DB.Where("user_id = ?", v.TeacherID).First(&teacher).Error; err == nil {
-		if teacher.UserType != constants.Teacher {
-			return exception.StudentCannotBindOrUnBind
-		}
-	} else {
-		return exception.UserNotExisted
+	if err := model.DB.Where("user_id = ?", v.TeacherID).First(&teacher).Error; err != nil {
+		res.Code = vo.UserNotExisted
+		return
 	}
+
+	if teacher.UserType != constants.Teacher {
+		res.Code = vo.NotTeacher
+		return
+	}
+
 	// 检查课程是否正确
-	if err := model.DB.Where("course_id = ?", v.CourseID).First(&course).Error; err == nil {
-		if course.TeacherID == "-1" {
-			// 课程已经解绑
-			return exception.OK
-		}
-	} else {
-		return exception.CourseNotExisted
+	if err := model.DB.Where("course_id = ?", v.CourseID).First(&course).Error; err != nil {
+		res.Code = vo.CourseNotExisted
+		return
 	}
+
+	if course.TeacherID == "-1" {
+		// 课程已经解绑
+		res.Code = vo.OK
+		return
+	}
+
 	// 解绑课程
 	course.TeacherID = "-1"
-	if err := model.DB.Model(&course).Update("teacher_id", course.TeacherID).Error; err == nil {
-		return exception.OK
+	if err := model.DB.Model(&course).Update("teacher_id", course.TeacherID).Error; err != nil {
+		res.Code = vo.UnknownError
+	} else {
+		res.Code = vo.OK
 	}
-	return exception.UnknownError
+
+	return
 }
 
 //------------------获取老师所有课程-----------------------------------------
-func (m *CourService) GetTeacherCourseService(v *vo.GetTeacherCourseRequest) util.R {
+func (m *CourService) GetTeacherCourseService(v *vo.GetTeacherCourseRequest) (res vo.GetTeacherCourseResponse) {
 	teacher := &model.TMember{}
+
 	// 检测老师是否正确
 	if err := model.DB.Where("user_id = ?", v.TeacherID).First(&teacher).Error; err == nil {
-		if teacher.UserType != constants.Teacher {
-			return *util.Error(exception.StudentCannotBindOrUnBind)
-		}
-	} else {
-		fmt.Println(teacher)
-		return *util.Error(exception.UserNotExisted)
+		res.Code = vo.UserNotExisted
+		return
 	}
+	if teacher.UserType != constants.Teacher {
+		res.Code = vo.NotTeacher
+		return
+	}
+
 	// 获取结果
 	courses := make([]model.TCourse, 0)
-	result := make([]string, 0)
-	if err := model.DB.Where("teacher_id = ?", v.TeacherID).Find(&courses).Error; err == nil {
-		if len(courses) == 0 {
-			return *util.Ok("该老师无教学课程")
-		}
-		for _, v := range courses {
-			result = append(result, v.Name)
-		}
-		return *util.Ok(result)
+	result := make([]*vo.TCourse, 0)
+
+	if err := model.DB.Where("teacher_id = ?", v.TeacherID).Find(&courses).Error; err != nil {
+		res.Code = vo.UnknownError
+		return
 	}
-	return *util.Error(exception.UnknownError)
+
+	for _, v := range courses {
+		course := vo.TCourse{
+			strconv.FormatInt(v.CourseID, 10),
+			v.Name,
+			v.TeacherID,
+		}
+		result = append(result, &course)
+	}
+	res.Code = vo.OK
+	res.Data.CourseList = result
+	return
 }
 
 //-------------------排课求解器--------------------------------------------
-func (m *CourService) ScheduleCourse(schedule vo.ScheduleCourseRequest) util.R {
-	// result  key:课程  val：对应的老师
+func (m *CourService) ScheduleCourse(schedule vo.ScheduleCourseRequest) (res vo.ScheduleCourseResponse) {
+	// result----key:课程, val：对应的老师
 	result := make(map[string]string, 0)
 	teachers := make([]string, 0)
 	courses := make([]string, 0)
-	// set   key:课程   val： 是否被被遍历 find函数需要
+
+	// set----key:课程, val:是否被被遍历 find函数需要
 	set := make(map[string]bool, 0)
 	relation := &schedule.TeacherCourseRelationShip
+
 	// 提取teacher与course集合
 	for k, v := range *relation {
 		teachers = append(teachers, k)
@@ -184,6 +197,7 @@ func (m *CourService) ScheduleCourse(schedule vo.ScheduleCourseRequest) util.R {
 			}
 		}
 	}
+
 	// 二分图匹配
 	for _, v := range teachers {
 		clear(&set)
@@ -194,7 +208,9 @@ func (m *CourService) ScheduleCourse(schedule vo.ScheduleCourseRequest) util.R {
 	for k, v := range result {
 		ans[v] = k
 	}
-	return *util.Ok(ans)
+	res.Code = vo.OK
+	res.Data = ans
+	return
 }
 
 func find(v string, relation *map[string][]string, set *map[string]bool, result *map[string]string) bool {
