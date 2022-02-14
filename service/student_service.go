@@ -1,40 +1,40 @@
 package service
 
 import (
-	"camp-course-selection/common/util"
 	"camp-course-selection/model"
 	"camp-course-selection/vo"
-	"fmt"
 )
 
 type StudentService struct {
 }
 
-func (m *StudentService) Course(v *vo.BookCourseRequest) util.R {
+func (m *StudentService) Course(v *vo.BookCourseRequest) (res vo.BookCourseResponse) {
 	course := model.StudentCourse{
 		STUDENT_ID: v.StudentID,
 		COURSE_ID:  v.CourseID,
 	}
 	if err := model.DB.Create(&course).Error; err != nil {
-		return *util.Error(exception.Coursed)
+		res.Code = vo.CourseHasExisted
+		return
 	}
-
-	return *util.Ok("创建成功")
+	res.Code = vo.OK
+	return
 }
 
-func (m *StudentService) GetCourse(v *vo.GetStudentCourseRequest) util.R {
+func (m *StudentService) GetCourse(v *vo.GetStudentCourseRequest) (res vo.GetStudentCourseResponse) {
 	courses := []model.StudentCourse{}
 	if err := model.DB.Where("STUDENT_ID = ?", v.StudentID).Find(&courses).Error; err != nil {
-		return *util.Error(exception.UnknownError)
+		res.Code = vo.StudentNotExisted
+		return
 	}
-	fmt.Println(courses)
-	var courseList = make([]model.TCourse, len(courses))
-
+	var courseList = make([]vo.TCourse, len(courses))
 	for i := 0; i < len(courses); i++ {
-		if err := model.DB.Where("course_id = ?", courses[i].COURSE_ID).First(&courseList[i]).Error; err != nil {
-			return *util.Error(exception.UnknownError)
+		if err := model.DB.Where("course_id = ?", courses[i].COURSE_ID).Find(&courseList[i]).Error; err != nil {
+			res.Code = vo.CourseNotExisted
+			return
 		}
 	}
-	fmt.Println(courseList)
-	return *util.Ok(courseList)
+	res.Code = vo.OK
+	res.Data.CourseList = courseList
+	return
 }
