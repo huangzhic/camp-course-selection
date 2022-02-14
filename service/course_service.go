@@ -49,14 +49,20 @@ func (m *CourService) CreateCourse(courseVo *vo.CreateCourseRequest) (res vo.Cre
 }
 
 //-----------获取课程-------------------------------------------------------
-func (m *CourService) GetCourse(v *vo.GetCourseRequest) util.R {
+func (m *CourService) GetCourse(v *vo.GetCourseRequest) (res vo.GetCourseResponse) {
 	course := &model.TCourse{}
-	err := model.DB.Where("course_id = ?", v.CourseID).First(&course).Error
-	fmt.Println(course, "111")
-	if err == nil {
-		return *util.Ok(course)
+	if err := model.DB.Where("course_id = ?", v.CourseID).First(&course).Error; err != nil {
+		res.Code = vo.CourseNotExisted
+		return
 	}
-	return *util.Error(exception.CourseNotExisted)
+
+	res.Code = vo.OK
+	res.Data = vo.TCourse{
+		CourseID:  string(course.CourseID),
+		Name:      course.Name,
+		TeacherID: course.TeacherID,
+	}
+	return
 }
 
 //------------绑定课程-------------------------------------------------------
