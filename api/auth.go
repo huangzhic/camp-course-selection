@@ -14,8 +14,9 @@ var authService service.AuthService
 // Login 用户登录接口
 
 func Login(c *gin.Context) {
-	res := vo.LoginResponse{}
+	var res = vo.LoginResponse{}
 	var loginVo vo.LoginRequest
+
 	if err := c.ShouldBindJSON(&loginVo); err == nil {
 		res = authService.Login(&loginVo, c)
 		c.JSON(200, res)

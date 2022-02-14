@@ -3,16 +3,17 @@ package service
 import (
 	"camp-course-selection/model"
 	"camp-course-selection/vo"
+	"strconv"
 )
 
 type StudentService struct {
 }
 
 func (m *StudentService) BookCourse(v *vo.BookCourseRequest) (res vo.BookCourseResponse) {
-	course := model.StudentCourse{
-		STUDENT_ID: v.StudentID,
-		COURSE_ID:  v.CourseID,
-	}
+	var course model.StudentCourse
+	course.STUDENT_ID, _ = strconv.ParseInt(v.StudentID, 10, 0)
+	course.COURSE_ID, _ = strconv.ParseInt(v.CourseID, 10, 0)
+
 	if err := model.DB.Create(&course).Error; err != nil {
 		res.Code = vo.CourseHasExisted
 		return

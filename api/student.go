@@ -11,7 +11,8 @@ var studentService service.StudentService
 //抢课
 func BookCourse(c *gin.Context) {
 	var courseVo vo.BookCourseRequest
-	res := vo.BookCourseResponse{}
+	var res vo.BookCourseResponse
+
 	if err := c.ShouldBind(&courseVo); err == nil {
 		res = studentService.BookCourse(&courseVo)
 		c.JSON(200, res)
