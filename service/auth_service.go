@@ -32,6 +32,11 @@ func (m *AuthService) Login(loginVo *vo.LoginRequest, c *gin.Context) (res vo.Lo
 		return
 	}
 
+	if member.Status != 1 {
+		res.Code = vo.UserHasDeleted
+		return
+	}
+
 	if ok := member.CheckPassword(loginVo.Password); ok == false {
 		res.Code = vo.WrongPassword
 		return
