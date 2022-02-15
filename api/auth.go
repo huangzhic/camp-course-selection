@@ -12,12 +12,10 @@ import (
 var authService service.AuthService
 
 // Login 用户登录接口
-
 func Login(c *gin.Context) {
 	var res = vo.LoginResponse{}
 	var loginVo vo.LoginRequest
-
-	if err := c.ShouldBindJSON(&loginVo); err == nil {
+	if err := c.ShouldBind(&loginVo); err == nil {
 		res = authService.Login(&loginVo, c)
 		c.JSON(200, res)
 	} else {
@@ -37,7 +35,6 @@ func Logout(c *gin.Context) {
 }
 
 // Whoami 获取当前用户
-
 func Whoami(c *gin.Context) {
 	res := vo.WhoAmIResponse{}
 	if user, _ := c.Get("user"); user != nil {
