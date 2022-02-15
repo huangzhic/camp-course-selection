@@ -1,6 +1,7 @@
 package service
 
 import (
+	"camp-course-selection/cache"
 	"camp-course-selection/common/constants"
 	"camp-course-selection/common/util"
 	"camp-course-selection/model"
@@ -11,20 +12,12 @@ import (
 
 type CourService struct{}
 
-//-----------创建课程-------------------------------------------------------
+// CreateCourse 创建课程
 func (m *CourService) CreateCourse(courseVo *vo.CreateCourseRequest) (res vo.CreateCourseResponse) {
 	course := model.TCourse{
 		Name:        courseVo.Name,
 		CourseStock: courseVo.Cap,
 	}
-
-	// 表单验证
-	if err := model.DB.Model(course).Where("name = ?", courseVo.Name).Find(&course); err != nil {
-		res.Code = vo.CourseHasExisted
-		res.Data.CourseID = string(course.CourseID)
-		return
-	}
-
 	// 雪花ID
 	node, err := snowflake.NewNode(1)
 	if err != nil {
@@ -35,19 +28,20 @@ func (m *CourService) CreateCourse(courseVo *vo.CreateCourseRequest) (res vo.Cre
 
 	id := node.Generate()
 	course.CourseID = int64(id)
-	course.TeacherID = "-1" // -1代表该课程未被绑定
+	course.TeacherID = -1 // -1代表该课程未被绑定
 
 	// 创建课程
 	if err := model.DB.Create(&course).Error; err != nil {
 		res.Code = vo.UnknownError
 	} else {
 		res.Code = vo.OK
-		res.Data.CourseID = string(course.CourseID)
+		res.Data.CourseID = strconv.FormatInt(course.CourseID, 10)
+		cache.RedisClient.Set(res.Data.CourseID, courseVo.Cap, 0)
 	}
 	return
 }
 
-//-----------获取课程-------------------------------------------------------
+// GetCourse 获取课程
 func (m *CourService) GetCourse(v *vo.GetCourseRequest) (res vo.GetCourseResponse) {
 	course := &model.TCourse{}
 	if err := model.DB.Where("course_id = ?", v.CourseID).First(&course).Error; err != nil {
@@ -57,14 +51,14 @@ func (m *CourService) GetCourse(v *vo.GetCourseRequest) (res vo.GetCourseRespons
 
 	res.Code = vo.OK
 	res.Data = vo.TCourse{
-		CourseID:  string(course.CourseID),
+		CourseID:  strconv.FormatInt(course.CourseID, 10),
 		Name:      course.Name,
-		TeacherID: course.TeacherID,
+		TeacherID: strconv.FormatInt(course.TeacherID, 10),
 	}
 	return
 }
 
-//------------绑定课程-------------------------------------------------------
+// BindCourseService 绑定课程
 func (m *CourService) BindCourseService(v *vo.BindCourseRequest) (res vo.BindCourseResponse) {
 	teacher := &model.TMember{}
 	course := &model.TCourse{}
@@ -86,13 +80,13 @@ func (m *CourService) BindCourseService(v *vo.BindCourseRequest) (res vo.BindCou
 		return
 	}
 
-	if course.TeacherID != "-1" {
+	if course.TeacherID != -1 {
 		res.Code = vo.CourseHasBound
 		return
 	}
 
 	// 绑定课程
-	course.TeacherID = strconv.FormatInt(teacher.UserID, 10)
+	course.TeacherID = teacher.UserID
 	if err := model.DB.Model(&course).Update("teacher_id", course.TeacherID).Error; err == nil {
 		res.Code = vo.OK
 	} else {
@@ -101,7 +95,7 @@ func (m *CourService) BindCourseService(v *vo.BindCourseRequest) (res vo.BindCou
 	return
 }
 
-//-----------------解绑课程---------------------------------------------------
+// UnBindCourseService 解绑课程
 func (m *CourService) UnBindCourseService(v *vo.UnbindCourseRequest) (res vo.UnbindCourseResponse) {
 	teacher := &model.TMember{}
 	course := &model.TCourse{}
@@ -123,14 +117,14 @@ func (m *CourService) UnBindCourseService(v *vo.UnbindCourseRequest) (res vo.Unb
 		return
 	}
 
-	if course.TeacherID == "-1" {
+	if course.TeacherID == -1 {
 		// 课程已经解绑
 		res.Code = vo.OK
 		return
 	}
 
 	// 解绑课程
-	course.TeacherID = "-1"
+	course.TeacherID = -1
 	if err := model.DB.Model(&course).Update("teacher_id", course.TeacherID).Error; err != nil {
 		res.Code = vo.UnknownError
 	} else {
@@ -140,7 +134,7 @@ func (m *CourService) UnBindCourseService(v *vo.UnbindCourseRequest) (res vo.Unb
 	return
 }
 
-//------------------获取老师所有课程-----------------------------------------
+// GetTeacherCourseService 获取老师所有课程
 func (m *CourService) GetTeacherCourseService(v *vo.GetTeacherCourseRequest) (res vo.GetTeacherCourseResponse) {
 	teacher := &model.TMember{}
 
@@ -167,7 +161,7 @@ func (m *CourService) GetTeacherCourseService(v *vo.GetTeacherCourseRequest) (re
 		course := vo.TCourse{
 			strconv.FormatInt(v.CourseID, 10),
 			v.Name,
-			v.TeacherID,
+			strconv.FormatInt(v.TeacherID, 10),
 		}
 		result = append(result, &course)
 	}
@@ -176,7 +170,7 @@ func (m *CourService) GetTeacherCourseService(v *vo.GetTeacherCourseRequest) (re
 	return
 }
 
-//-------------------排课求解器--------------------------------------------
+// ScheduleCourse 排课求解器
 func (m *CourService) ScheduleCourse(schedule vo.ScheduleCourseRequest) (res vo.ScheduleCourseResponse) {
 	// result----key:课程, val：对应的老师
 	result := make(map[string]string, 0)

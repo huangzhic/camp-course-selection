@@ -16,6 +16,12 @@ require (
 )
 
 require (
+	github.com/rabbitmq/amqp091-go v0.0.0-20210823000215-c428a6150891
+	github.com/streadway/amqp v1.0.0
+	github.com/wagslane/go-rabbitmq v0.7.0
+)
+
+require (
 	github.com/boj/redistore v0.0.0-20180917114910-cd5dcc76aeff // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-playground/locales v0.13.0 // indirect

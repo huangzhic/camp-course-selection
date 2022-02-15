@@ -9,9 +9,9 @@ https://github.com/Gourouting/singo
 
 本项目基于Singo做了以下修改：
 
-1. 加入了snowflake算法以生成分布式ID。
-2. 将session存入redis中，以支持分布式会话共享。
-3. 
+1. 加入了Snowflake算法以生成分布式ID。
+2. 将Session存入redis中，以支持分布式会话共享。
+3. 增加了RabbitMQ消息队列。
 4. 
 5. 
 6. 

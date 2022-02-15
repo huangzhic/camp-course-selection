@@ -8,7 +8,7 @@ import (
 
 var courService service.CourService
 
-//----------创建课程-------------------------------------------------
+// CreateCourse 创建课程
 func CreateCourse(c *gin.Context) {
 	var courseVo vo.CreateCourseRequest
 	if err := c.ShouldBind(&courseVo); err == nil {
@@ -21,7 +21,7 @@ func CreateCourse(c *gin.Context) {
 	}
 }
 
-//-------------获取课程----------------------------------------------
+// GetCourse 获取课程
 func GetCourse(c *gin.Context) {
 	var courseVo vo.GetCourseRequest
 
@@ -31,7 +31,7 @@ func GetCourse(c *gin.Context) {
 	c.JSON(200, res)
 }
 
-//-------------绑定课程---------------------------------------------
+// BindCourse 绑定课程
 func BindCourse(c *gin.Context) {
 	var bindCourse vo.BindCourseRequest
 	var bindRes vo.BindCourseResponse
@@ -44,7 +44,7 @@ func BindCourse(c *gin.Context) {
 	}
 }
 
-//--------------解绑课程服务-----------------------------------------
+// UnBindCourse 解绑课程服务
 func UnBindCourse(c *gin.Context) {
 	var unBindCourse vo.UnbindCourseRequest
 	var unbindRes vo.UnbindCourseResponse
@@ -57,7 +57,7 @@ func UnBindCourse(c *gin.Context) {
 	}
 }
 
-//--------------获取该老师的所有课程（返回课程名称列表）------------------
+// GetTeacherCourse 获取该老师的所有课程（返回课程名称列表）
 func GetTeacherCourse(c *gin.Context) {
 	var teacherCourse vo.GetTeacherCourseRequest
 	var TeacherCourseRes vo.GetTeacherCourseResponse
@@ -70,7 +70,7 @@ func GetTeacherCourse(c *gin.Context) {
 	}
 }
 
-//-------------排课求解器-------------------------------------------
+// ScheduleCourse 排课求解器
 func ScheduleCourse(c *gin.Context) {
 	var schedule vo.ScheduleCourseRequest
 	var res vo.ScheduleCourseResponse
