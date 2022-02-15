@@ -36,7 +36,8 @@ func (m *CourService) CreateCourse(courseVo *vo.CreateCourseRequest) (res vo.Cre
 	} else {
 		res.Code = vo.OK
 		res.Data.CourseID = strconv.FormatInt(course.CourseID, 10)
-		cache.RedisClient.Set(res.Data.CourseID, courseVo.Cap, 0)
+		//课程容量存入redis中 redis中的key格式 CourseCap:课程ID
+		cache.RedisClient.Set("CourseCap:"+res.Data.CourseID, courseVo.Cap, 0)
 	}
 	return
 }

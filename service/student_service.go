@@ -5,9 +5,9 @@ import (
 	"camp-course-selection/common/util"
 	"camp-course-selection/model"
 	"camp-course-selection/vo"
-	amqp "github.com/rabbitmq/amqp091-go"
-	rabbitmq "github.com/wagslane/go-rabbitmq"
-	"os"
+	"encoding/json"
+	"github.com/go-redis/redis"
+	"strconv"
 	"time"
 )
 
@@ -15,9 +15,24 @@ type StudentService struct {
 }
 
 func (m *StudentService) BookCourse(v *vo.BookCourseRequest) (res vo.BookCourseResponse) {
-	//判断这个学生是否已抢过课 redis中的key格式 StudentID_CourseID
-	redisKey := v.StudentID + "_" + v.CourseID
-	b, err := cache.RedisClient.SetNX(redisKey, 1, 5*time.Minute).Result()
+	//查询学生信息
+	var member model.TMember
+	sid, _ := strconv.ParseInt(v.StudentID, 10, 64)
+	if err := model.DB.First(&member, sid).Error; err != nil {
+		res.Code = vo.StudentNotExisted
+		return
+	}
+	//查询绑课信息
+	cid, _ := strconv.ParseInt(v.CourseID, 10, 64)
+	count := int64(0)
+	model.DB.Where("STUDENT_ID = ? AND COURSE_ID = ?", sid, cid).Count(&count)
+	if count > 0 {
+		res.Code = vo.StudentHasCourse
+		return
+	}
+	//判断这个学生是否已抢过课 redis中的key格式 BookCourseLock:StudentID_CourseID
+	redisKey := "BookCourseLock:" + v.StudentID + "_" + v.CourseID
+	b, err := cache.RedisClient.SetNX(redisKey, 1, time.Minute).Result()
 	if err != nil {
 		util.Log().Error("BookCourse SetNX Error : %v", err)
 		res.Code = vo.UnknownError
@@ -30,30 +45,26 @@ func (m *StudentService) BookCourse(v *vo.BookCourseRequest) (res vo.BookCourseR
 	}
 	//库存的key为课程ID
 	var num int64
-	num, err = cache.RedisClient.Decr(v.CourseID).Result()
+	num, err = cache.RedisClient.Decr("CourseCap:" + v.CourseID).Result()
 	if num < 0 {
 		res.Code = vo.CourseNotAvailable
 		return
 	}
 	//抢课成功，快速返回
-	publisher, err := rabbitmq.NewPublisher(os.Getenv("RABBITMQ_DSN"), amqp.Config{},
-		rabbitmq.WithPublisherOptionsLogging)
-	if err != nil {
-		util.Log().Error("NewPublisher Error : %v", err)
+	mp := make(map[string]interface{})
+	json, _ := json.Marshal(*v)
+	mp["StudentCourseObj"] = json
+	if _, err = cache.RedisClient.XAdd(&redis.XAddArgs{
+		Stream:       "BookCourseStream",
+		MaxLen:       0,
+		MaxLenApprox: 0,
+		ID:           "",
+		Values:       mp,
+	}).Result(); err != nil {
+		util.Log().Error("BookCourse XAdd Error : %v \n", err)
 		res.Code = vo.UnknownError
-		return
-	}
-	err = publisher.Publish(
-		[]byte("helloworld"),
-		[]string{"book.course"},
-		rabbitmq.WithPublishOptionsContentType("application/json"),
-		rabbitmq.WithPublishOptionsMandatory,
-		rabbitmq.WithPublishOptionsPersistentDelivery,
-		rabbitmq.WithPublishOptionsExchange("student-book-course"),
-	)
-	if err != nil {
-		util.Log().Error("Publish Error : %v", err)
-		res.Code = vo.UnknownError
+		//出错，恢复课程容量
+		cache.RedisClient.Incr("CourseCap:" + v.CourseID)
 		return
 	}
 	res.Code = vo.OK
@@ -61,18 +72,50 @@ func (m *StudentService) BookCourse(v *vo.BookCourseRequest) (res vo.BookCourseR
 }
 
 func (m *StudentService) GetStudentCourse(v *vo.GetStudentCourseRequest) (res vo.GetStudentCourseResponse) {
-	courses := []model.StudentCourse{}
-	if err := model.DB.Where("STUDENT_ID = ?", v.StudentID).Find(&courses).Error; err != nil {
+
+	//先查redis redis中的key格式 GetStudentCourse - StudentID
+	str, err := cache.RedisClient.HGet("GetStudentCourse", v.StudentID).Result()
+	if str != "" {
+		res.Code = vo.OK
+		var slice []vo.TCourse
+		json.Unmarshal([]byte(str), &slice)
+		res.Data.CourseList = slice
+		return
+	}
+
+	//再查数据库
+	var member model.TMember
+	sid, _ := strconv.ParseInt(v.StudentID, 10, 64)
+	//判断学生是否存在
+	if err = model.DB.First(&member, sid).Error; err != nil {
 		res.Code = vo.StudentNotExisted
+		return
+	}
+	//判断学生类型
+	if vo.UserType(member.UserType) != vo.Student {
+		res.Code = vo.StudentNotExisted
+	}
+	var courses []model.StudentCourse
+	if err = model.DB.Where("STUDENT_ID = ?", v.StudentID).Find(&courses).Error; err != nil {
+		util.Log().Error("GetStudentCourse Query StudentCourse Error : %v \n", err)
+		res.Code = vo.UnknownError
+		return
+	}
+	//判断学生是否有课程
+	if len(courses) == 0 {
+		res.Code = vo.StudentHasNoCourse
 		return
 	}
 	var courseList = make([]vo.TCourse, len(courses))
 	for i := 0; i < len(courses); i++ {
-		if err := model.DB.Where("course_id = ?", courses[i].CourseID).Find(&courseList[i]).Error; err != nil {
+		if err = model.DB.Where("course_id = ?", courses[i].CourseID).Find(&courseList[i]).Error; err != nil {
 			res.Code = vo.CourseNotExisted
 			return
 		}
 	}
+	//缓存到redis中
+	data, _ := json.Marshal(courseList)
+	cache.RedisClient.HSet("GetStudentCourse", v.StudentID, data)
 	res.Code = vo.OK
 	res.Data.CourseList = courseList
 	return
