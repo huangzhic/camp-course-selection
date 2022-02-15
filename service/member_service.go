@@ -30,7 +30,7 @@ func (m *MemberService) CreateMember(memberVo *vo.CreateMemberRequest, c *gin.Co
 		return
 	}
 	// 表单验证
-	if code := CreateMemberValid(memberVo); code != 0 {
+	if code := CreateMemberValid(memberVo); code != vo.OK {
 		res.Code = code
 		return
 	}
@@ -97,7 +97,7 @@ func CreateMemberValid(memberVo *vo.CreateMemberRequest) (code vo.ErrNo) {
 			return vo.ParamInvalid
 		}
 	}
-	
+
 	if CapitalLetter && LowercaseLetter && Number {
 		return vo.OK
 	} else {
