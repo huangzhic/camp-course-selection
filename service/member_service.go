@@ -82,7 +82,27 @@ func CreateMemberValid(memberVo *vo.CreateMemberRequest) (code vo.ErrNo) {
 	if pass_size := len(memberVo.Password); pass_size > 20 || pass_size < 8 {
 		return vo.ParamInvalid
 	}
-	return vo.OK
+
+	pw := memberVo.Password
+	var CapitalLetter, LowercaseLetter, Number bool
+	for i := 0; i < len(pw); i++ {
+		switch {
+		case 64 < pw[i] && pw[i] < 91:
+			CapitalLetter = true
+		case 96 < pw[i] && pw[i] < 123:
+			LowercaseLetter = true
+		case 47 < pw[i] && pw[i] < 58:
+			Number = true
+		default:
+			return vo.ParamInvalid
+		}
+	}
+	
+	if CapitalLetter && LowercaseLetter && Number {
+		return vo.OK
+	} else {
+		return vo.ParamInvalid
+	}
 }
 
 // GetMember 获取用户信息
