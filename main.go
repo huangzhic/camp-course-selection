@@ -47,7 +47,7 @@ func listen() {
 			util.Log().Error("Create StudentCourse Error : %v\n ", err)
 		} else {
 			//课程容量减1
-			model.DB.Exec("\tUPDATE T_COURSE SET COURSE_STOCK = COURSE_STOCK - 1 where COURSE_ID = ?", cid)
+			model.DB.Exec("UPDATE t_course SET COURSE_STOCK = COURSE_STOCK - 1 where COURSE_ID = ?", cid)
 			//删除课表缓存
 			cache.RedisClient.HDel("GetStudentCourse", bookCourseVo.StudentID)
 		}
