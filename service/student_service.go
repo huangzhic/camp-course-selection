@@ -22,6 +22,10 @@ func (m *StudentService) BookCourse(v *vo.BookCourseRequest) (res vo.BookCourseR
 		res.Code = vo.StudentNotExisted
 		return
 	}
+	if vo.UserType(member.UserType) != vo.Student {
+		res.Code = vo.StudentNotExisted
+		return
+	}
 	//查询绑课信息
 	cid, _ := strconv.ParseInt(v.CourseID, 10, 64)
 	count := int64(0)
