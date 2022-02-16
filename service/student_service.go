@@ -53,7 +53,7 @@ func (m *StudentService) BookCourse(v *vo.BookCourseRequest) (res vo.BookCourseR
 	//抢课成功，快速返回
 	mp := make(map[string]interface{})
 	json, _ := json.Marshal(*v)
-	mp["StudentCourseObj"] = json
+	mp["StudentCourseObj"] = string(json)
 	if _, err = cache.RedisClient.XAdd(&redis.XAddArgs{
 		Stream:       "BookCourseStream",
 		MaxLen:       0,
@@ -95,8 +95,9 @@ func (m *StudentService) GetStudentCourse(v *vo.GetStudentCourseRequest) (res vo
 	if vo.UserType(member.UserType) != vo.Student {
 		res.Code = vo.StudentNotExisted
 	}
-	var courses []model.StudentCourse
-	if err = model.DB.Where("STUDENT_ID = ?", v.StudentID).Find(&courses).Error; err != nil {
+
+	courses := make([]model.StudentCourse, 0)
+	if err = model.DB.Where("STUDENT_ID = ?", sid).Find(&courses).Error; err != nil {
 		util.Log().Error("GetStudentCourse Query StudentCourse Error : %v \n", err)
 		res.Code = vo.UnknownError
 		return
@@ -106,16 +107,22 @@ func (m *StudentService) GetStudentCourse(v *vo.GetStudentCourseRequest) (res vo
 		res.Code = vo.StudentHasNoCourse
 		return
 	}
+	var queryList = make([]model.TCourse, len(courses))
 	var courseList = make([]vo.TCourse, len(courses))
 	for i := 0; i < len(courses); i++ {
-		if err = model.DB.Where("course_id = ?", courses[i].CourseID).Find(&courseList[i]).Error; err != nil {
+		if err = model.DB.Where("course_id = ?", courses[i].CourseID).Find(&queryList[i]).Error; err != nil {
 			res.Code = vo.CourseNotExisted
 			return
 		}
 	}
+	for i := 0; i < len(courseList); i++ {
+		courseList[i].CourseID = strconv.FormatInt(queryList[i].CourseID, 10)
+		courseList[i].TeacherID = strconv.FormatInt(queryList[i].TeacherID, 10)
+		courseList[i].Name = queryList[i].Name
+	}
 	//缓存到redis中
 	data, _ := json.Marshal(courseList)
-	cache.RedisClient.HSet("GetStudentCourse", v.StudentID, data)
+	cache.RedisClient.HSet("GetStudentCourse", v.StudentID, string(data))
 	res.Code = vo.OK
 	res.Data.CourseList = courseList
 	return

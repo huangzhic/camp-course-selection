@@ -25,7 +25,7 @@ func (m *MemberService) CreateMember(memberVo *vo.CreateMemberRequest, c *gin.Co
 	}
 	u, _ := user.(*model.TMember)
 	//检查权限
-	if u.UserType != constants.Admin {
+	if vo.UserType(u.UserType) != vo.Admin {
 		res.Code = vo.PermDenied
 		return
 	}
@@ -175,7 +175,7 @@ func (m *MemberService) DeleteMember(memberVo *vo.DeleteMemberRequest) (res vo.D
 		return
 	}
 
-	if err := model.DB.Model(&member).Update("status", 0).Error; err == nil {
+	if err := model.DB.Model(&member).Update("status", constants.InActive).Error; err == nil {
 		res.Code = vo.OK
 	} else {
 		res.Code = vo.UnknownError

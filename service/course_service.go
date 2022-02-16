@@ -2,7 +2,6 @@ package service
 
 import (
 	"camp-course-selection/cache"
-	"camp-course-selection/common/constants"
 	"camp-course-selection/common/util"
 	"camp-course-selection/model"
 	"camp-course-selection/vo"
@@ -70,7 +69,7 @@ func (m *CourService) BindCourseService(v *vo.BindCourseRequest) (res vo.BindCou
 		return
 	}
 
-	if teacher.UserType != constants.Teacher {
+	if vo.UserType(teacher.UserType) != vo.Teacher {
 		res.Code = vo.NotTeacher
 		return
 	}
@@ -107,7 +106,7 @@ func (m *CourService) UnBindCourseService(v *vo.UnbindCourseRequest) (res vo.Unb
 		return
 	}
 
-	if teacher.UserType != constants.Teacher {
+	if vo.UserType(teacher.UserType) != vo.Teacher {
 		res.Code = vo.NotTeacher
 		return
 	}
@@ -140,11 +139,11 @@ func (m *CourService) GetTeacherCourseService(v *vo.GetTeacherCourseRequest) (re
 	teacher := &model.TMember{}
 
 	// 检测老师是否正确
-	if err := model.DB.Where("user_id = ?", v.TeacherID).First(&teacher).Error; err == nil {
+	if err := model.DB.Where("user_id = ?", v.TeacherID).First(&teacher).Error; err != nil {
 		res.Code = vo.UserNotExisted
 		return
 	}
-	if teacher.UserType != constants.Teacher {
+	if vo.UserType(teacher.UserType) != vo.Teacher {
 		res.Code = vo.NotTeacher
 		return
 	}
@@ -153,11 +152,11 @@ func (m *CourService) GetTeacherCourseService(v *vo.GetTeacherCourseRequest) (re
 	courses := make([]model.TCourse, 0)
 	result := make([]*vo.TCourse, 0)
 
-	if err := model.DB.Where("teacher_id = ?", v.TeacherID).Find(&courses).Error; err != nil {
+	tid, _ := strconv.ParseInt(v.TeacherID, 10, 64)
+	if err := model.DB.Where("teacher_id = ?", tid).Find(&courses).Error; err != nil {
 		res.Code = vo.UnknownError
 		return
 	}
-
 	for _, v := range courses {
 		course := vo.TCourse{
 			strconv.FormatInt(v.CourseID, 10),
