@@ -14,7 +14,14 @@ import (
 type StudentService struct {
 }
 
+var courseCapCache = make(map[string]bool)
+
 func (m *StudentService) BookCourse(v *vo.BookCourseRequest) (res vo.BookCourseResponse) {
+	//在内存中查课程是否有容量
+	if _, ok := courseCapCache[v.CourseID]; ok {
+		res.Code = vo.CourseNotAvailable
+		return
+	}
 	//查询学生信息
 	var member model.TMember
 	sid, _ := strconv.ParseInt(v.StudentID, 10, 64)
@@ -51,6 +58,7 @@ func (m *StudentService) BookCourse(v *vo.BookCourseRequest) (res vo.BookCourseR
 	var num int64
 	num, err = cache.RedisClient.Decr("CourseCap:" + v.CourseID).Result()
 	if num < 0 {
+		courseCapCache[v.CourseID] = false
 		res.Code = vo.CourseNotAvailable
 		return
 	}
@@ -66,9 +74,15 @@ func (m *StudentService) BookCourse(v *vo.BookCourseRequest) (res vo.BookCourseR
 		Values:       mp,
 	}).Result(); err != nil {
 		util.Log().Error("BookCourse XAdd Error : %v \n", err)
+		//redis通讯出错，记录到差错表中，等待批处理
+		record := model.TRecord{
+			StudentID: sid,
+			CourseID:  cid,
+		}
+		if err = model.DB.Create(&record).Error; err != nil {
+			util.Log().Error("Create Record Error : %v\n", err)
+		}
 		res.Code = vo.UnknownError
-		//出错，恢复课程容量
-		cache.RedisClient.Incr("CourseCap:" + v.CourseID)
 		return
 	}
 	res.Code = vo.OK

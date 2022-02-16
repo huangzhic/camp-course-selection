@@ -33,6 +33,25 @@ CREATE TABLE t_student_course
     PRIMARY KEY (STUDENT_ID, COURSE_ID)
 ) COMMENT = '学生课程关系表';
 
+
+DROP TABLE IF EXISTS t_record;
+CREATE TABLE t_record
+(
+    STUDENT_ID  BIGINT(20) NOT NULL COMMENT '学生ID',
+    COURSE_ID   BIGINT(20) NOT NULL COMMENT '课程ID',
+    CREATE_TIME timestamp NOT NULL COMMENT '创建时间',
+) COMMENT = '学生课程关系表';
+
+DROP TABLE IF EXISTS t_record;
+CREATE TABLE `t_record`
+(
+    `id`         bigint AUTO_INCREMENT,
+    `student_id` bigint(20) NOT NULL COMMENT '学生ID',
+    `course_id`  bigi(20) NOT NULL COMMENT '课程ID',
+    PRIMARY KEY (`id`)
+)COMMENT = '差错记录表';
+
+
 CREATE
 unique INDEX idx_t_member_user_name ON t_member(USER_NAME)
 CREATE

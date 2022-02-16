@@ -52,4 +52,5 @@ func Database(connString string) {
 	DB.AutoMigrate(&TMember{})
 	DB.AutoMigrate(&TCourse{})
 	DB.AutoMigrate(&StudentCourse{})
+	DB.AutoMigrate(&TRecord{})
 }
