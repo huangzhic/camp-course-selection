@@ -128,7 +128,16 @@ func (m *MemberService) GetMember(memberVo *vo.GetMemberRequest) (res vo.GetMemb
 
 // GetMemberList 批量获取用户
 func (m *MemberService) GetMemberList(memberVo *vo.GetMemberListRequest) (res vo.GetMemberListResponse) {
-	if err := model.DB.Limit(memberVo.Limit).Offset(memberVo.Offset).Find(&res.Data.MemberList); err == nil {
+	memberList := make([]model.TMember, 0)
+	if err := model.DB.Limit(memberVo.Limit).Offset(memberVo.Offset).Find(&memberList); err != nil {
+		resMemberList := make([]vo.TMember, len(memberList))
+		for i := 0; i < len(memberList); i++ {
+			resMemberList[i].Username = memberList[i].UserName
+			resMemberList[i].Nickname = memberList[i].Nickname
+			resMemberList[i].UserType = vo.UserType(memberList[i].UserType)
+			resMemberList[i].UserID = strconv.FormatInt(memberList[i].UserID, 10)
+		}
+		res.Data.MemberList = resMemberList
 		res.Code = vo.OK
 	} else {
 		res.Code = vo.ParamInvalid
