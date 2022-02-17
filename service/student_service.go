@@ -78,13 +78,13 @@ func (m *StudentService) BookCourse(v *vo.BookCourseRequest) (res vo.BookCourseR
 		res.Code = vo.RepeatRequest
 		return
 	}
-	//库存的key为CourseCap:课程ID
-	if _, err = cache.RedisClient.Get("CourseCap:" + v.CourseID).Result(); err != nil {
-		//缓存失效了
-		var tc model.TCourse
-		model.DB.First(&tc, cid)
-		cache.RedisClient.Set("CourseCap:"+v.CourseID, tc.CourseStock, 0)
-	}
+	// 此代码会造成线程不安全，引发超卖。 需要人工保证redis中课程容量缓存不会失效。
+	//if _, err = cache.RedisClient.Get("CourseCap:" + v.CourseID).Result(); err != nil {
+	//	//缓存失效了
+	//	var tc model.TCourse
+	//	model.DB.First(&tc, cid)
+	//	cache.RedisClient.Set("CourseCap:"+v.CourseID, tc.CourseStock, 0)
+	//}
 	var num int64
 	num, err = cache.RedisClient.Decr("CourseCap:" + v.CourseID).Result()
 	if num < 0 {
