@@ -8,7 +8,6 @@ import (
 	"camp-course-selection/server"
 	"camp-course-selection/vo"
 	"encoding/json"
-	"fmt"
 	"github.com/go-redis/redis"
 	"strconv"
 )
@@ -31,7 +30,8 @@ func listen() {
 			Block:   0,
 		}).Result()
 		if err != nil {
-			fmt.Println(err)
+			util.Log().Error("Listen XRead Error : %v\n", err)
+			continue
 		}
 		bookCourseJson := val[0].Messages[0].Values["StudentCourseObj"]
 		var bookCourseVo vo.BookCourseRequest
@@ -41,6 +41,14 @@ func listen() {
 		sc := model.StudentCourse{
 			StudentID: sid,
 			CourseID:  cid,
+		}
+		//先查如果有，就不插入
+		count := int64(0)
+		model.DB.Model(&model.StudentCourse{}).Where("STUDENT_ID = ? AND COURSE_ID = ?", sid, cid).Count(&count)
+		if count > 0 {
+			//删除消息
+			cache.RedisClient.XDel("BookCourseStream", val[0].Messages[0].ID)
+			continue
 		}
 		//双主键约束保证幂等性
 		if err = model.DB.Create(&sc).Error; err != nil {

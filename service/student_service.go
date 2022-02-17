@@ -2,6 +2,7 @@ package service
 
 import (
 	"camp-course-selection/cache"
+	"camp-course-selection/common/constants"
 	"camp-course-selection/common/util"
 	"camp-course-selection/model"
 	"camp-course-selection/vo"
@@ -14,9 +15,27 @@ import (
 type StudentService struct {
 }
 
+//课程容量缓存
 var courseCapCache = make(map[string]bool)
 
+//学生抢课缓存
+var studentCourseCache = make(map[string]bool)
+
 func (m *StudentService) BookCourse(v *vo.BookCourseRequest) (res vo.BookCourseResponse) {
+	//学生-课程 两级缓存
+	scStr := v.StudentID + "_" + v.CourseID
+	//在内存中查学生-课程是否已经抢成功
+	if _, ok := studentCourseCache[scStr]; ok {
+		res.Code = vo.StudentHasCourse
+		return
+	}
+	//在redis中查学生-课程是否已经抢成功
+	a, _ := cache.RedisClient.Get("StuCourse:" + scStr).Result()
+	if a != "" {
+		studentCourseCache[scStr] = false
+		res.Code = vo.StudentHasCourse
+		return
+	}
 	//在内存中查课程是否有容量
 	if _, ok := courseCapCache[v.CourseID]; ok {
 		res.Code = vo.CourseNotAvailable
@@ -33,15 +52,20 @@ func (m *StudentService) BookCourse(v *vo.BookCourseRequest) (res vo.BookCourseR
 		res.Code = vo.StudentNotExisted
 		return
 	}
+	if member.Status == constants.InActive {
+		res.Code = vo.UserHasDeleted
+		return
+	}
 	//查询绑课信息
 	cid, _ := strconv.ParseInt(v.CourseID, 10, 64)
 	count := int64(0)
-	model.DB.Where("STUDENT_ID = ? AND COURSE_ID = ?", sid, cid).Count(&count)
+	model.DB.Model(&model.StudentCourse{}).Where("STUDENT_ID = ? AND COURSE_ID = ?", sid, cid).Count(&count)
 	if count > 0 {
+		CacheStudentCourse(scStr)
 		res.Code = vo.StudentHasCourse
 		return
 	}
-	//判断这个学生是否已抢过课 redis中的key格式 BookCourseLock:StudentID_CourseID
+	//分布式锁防止重复请求 redis中的key格式 BookCourseLock:StudentID_CourseID
 	redisKey := "BookCourseLock:" + v.StudentID + "_" + v.CourseID
 	b, err := cache.RedisClient.SetNX(redisKey, 1, time.Minute).Result()
 	if err != nil {
@@ -85,12 +109,12 @@ func (m *StudentService) BookCourse(v *vo.BookCourseRequest) (res vo.BookCourseR
 		res.Code = vo.UnknownError
 		return
 	}
+	CacheStudentCourse(scStr)
 	res.Code = vo.OK
 	return
 }
 
 func (m *StudentService) GetStudentCourse(v *vo.GetStudentCourseRequest) (res vo.GetStudentCourseResponse) {
-
 	//先查redis redis中的key格式 GetStudentCourse - StudentID
 	str, err := cache.RedisClient.HGet("GetStudentCourse", v.StudentID).Result()
 	if str != "" {
@@ -144,4 +168,10 @@ func (m *StudentService) GetStudentCourse(v *vo.GetStudentCourseRequest) (res vo
 	res.Code = vo.OK
 	res.Data.CourseList = courseList
 	return
+}
+
+// CacheStudentCourse 抢课成功信息写入缓存
+func CacheStudentCourse(scStr string) {
+	studentCourseCache[scStr] = false
+	cache.RedisClient.Set("StuCourse:"+scStr, 1, 15*time.Minute)
 }
