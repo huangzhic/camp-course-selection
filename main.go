@@ -33,6 +33,12 @@ func listen() {
 			util.Log().Error("Listen XRead Error : %v\n", err)
 			continue
 		}
+		if len(val) == 0 {
+			continue
+		}
+		if len(val[0].Messages) == 0 {
+			continue
+		}
 		bookCourseJson := val[0].Messages[0].Values["StudentCourseObj"]
 		var bookCourseVo vo.BookCourseRequest
 		json.Unmarshal([]byte(bookCourseJson.(string)), &bookCourseVo)
