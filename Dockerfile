@@ -16,7 +16,7 @@ VOLUME /tmp
 
 ENV REDIS_ADDR="172.17.0.1:6379"
 ENV REDIS_PW=""
-ENV REDIS_DB=""
+ENV REDIS_DB="0"
 ENV MYSQL_DSN="root:bytedancecamp@tcp(172.17.0.1:3306)/camp_base?charset=utf8mb4&parseTime=True&loc=Local"
 ENV GIN_MODE="release"
 ENV LOG_LEVEL="error"
