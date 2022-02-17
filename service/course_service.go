@@ -5,7 +5,6 @@ import (
 	"camp-course-selection/common/util"
 	"camp-course-selection/model"
 	"camp-course-selection/vo"
-	"fmt"
 	"github.com/bwmarrin/snowflake"
 	"strconv"
 )
@@ -45,7 +44,6 @@ func (m *CourService) CreateCourse(courseVo *vo.CreateCourseRequest) (res vo.Cre
 // GetCourse 获取课程
 func (m *CourService) GetCourse(v *vo.GetCourseRequest) (res vo.GetCourseResponse) {
 	course := &model.TCourse{}
-	fmt.Println("courseid: ", v.CourseID)
 	if err := model.DB.Where("course_id = ?", v.CourseID).First(&course).Error; err != nil {
 		res.Code = vo.CourseNotExisted
 		return
