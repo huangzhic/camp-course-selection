@@ -5,6 +5,7 @@ import (
 	"camp-course-selection/common/util"
 	"camp-course-selection/model"
 	"camp-course-selection/vo"
+	"fmt"
 	"github.com/bwmarrin/snowflake"
 	"strconv"
 )
@@ -27,7 +28,7 @@ func (m *CourService) CreateCourse(courseVo *vo.CreateCourseRequest) (res vo.Cre
 
 	id := node.Generate()
 	course.CourseID = int64(id)
-	course.TeacherID = -1 // -1代表该课程未被绑定
+	//course.TeacherID = -1 // -1代表该课程未被绑定
 
 	// 创建课程
 	if err := model.DB.Create(&course).Error; err != nil {
@@ -44,6 +45,7 @@ func (m *CourService) CreateCourse(courseVo *vo.CreateCourseRequest) (res vo.Cre
 // GetCourse 获取课程
 func (m *CourService) GetCourse(v *vo.GetCourseRequest) (res vo.GetCourseResponse) {
 	course := &model.TCourse{}
+	fmt.Println("courseid: ", v.CourseID)
 	if err := model.DB.Where("course_id = ?", v.CourseID).First(&course).Error; err != nil {
 		res.Code = vo.CourseNotExisted
 		return
@@ -80,7 +82,7 @@ func (m *CourService) BindCourseService(v *vo.BindCourseRequest) (res vo.BindCou
 		return
 	}
 
-	if course.TeacherID != -1 {
+	if course.TeacherID != 0 {
 		res.Code = vo.CourseHasBound
 		return
 	}
@@ -117,14 +119,14 @@ func (m *CourService) UnBindCourseService(v *vo.UnbindCourseRequest) (res vo.Unb
 		return
 	}
 
-	if course.TeacherID == -1 {
+	if course.TeacherID == 0 {
 		// 课程已经解绑
 		res.Code = vo.OK
 		return
 	}
 
 	// 解绑课程
-	course.TeacherID = -1
+	course.TeacherID = 0
 	if err := model.DB.Model(&course).Update("teacher_id", course.TeacherID).Error; err != nil {
 		res.Code = vo.UnknownError
 	} else {

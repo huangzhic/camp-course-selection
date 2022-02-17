@@ -24,11 +24,16 @@ func CreateCourse(c *gin.Context) {
 // GetCourse 获取课程
 func GetCourse(c *gin.Context) {
 	var courseVo vo.GetCourseRequest
-
-	courseVo.CourseID = c.Query("CourseID")
-
-	res := courService.GetCourse(&courseVo)
-	c.JSON(200, res)
+	//courseVo.CourseID = c.Query("CourseID")
+	if err := c.ShouldBind(&courseVo); err == nil {
+		res := courService.GetCourse(&courseVo)
+		c.JSON(200, res)
+	} else {
+		c.JSON(200, vo.GetCourseResponse{
+			Code: vo.UnknownError,
+			Data: vo.TCourse{},
+		})
+	}
 }
 
 // BindCourse 绑定课程

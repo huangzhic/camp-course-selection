@@ -28,7 +28,7 @@ func (m *AuthService) Login(loginVo *vo.LoginRequest, c *gin.Context) (res vo.Lo
 	var member model.TMember
 
 	if err := model.DB.Where("user_name = ?", loginVo.Username).First(&member).Error; err != nil {
-		res.Code = vo.WrongPassword
+		res.Code = vo.UserNotExisted
 		return
 	}
 
