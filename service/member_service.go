@@ -156,17 +156,16 @@ func (m *MemberService) UpdateMember(memberVo *vo.UpdateMemberRequest) (res vo.U
 		return
 	}
 
-	if member.Status == 0 {
+	if member.Status == constants.InActive {
 		res.Code = vo.UserHasDeleted
 		return
 	}
 
-	if err := model.DB.Model(&member).Update("nick_name", memberVo.Nickname).Error; err == nil {
-		res.Code = vo.OK
-	} else {
+	if err := model.DB.Model(&member).Update("nickname", memberVo.Nickname).Error; err != nil {
 		res.Code = vo.UnknownError
+		return
 	}
-
+	res.Code = vo.OK
 	return
 }
 
@@ -179,7 +178,7 @@ func (m *MemberService) DeleteMember(memberVo *vo.DeleteMemberRequest) (res vo.D
 		return
 	}
 
-	if member.Status == 0 {
+	if member.Status == constants.InActive {
 		res.Code = vo.UserHasDeleted
 		return
 	}
