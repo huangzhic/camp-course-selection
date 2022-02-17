@@ -64,8 +64,9 @@ func listen() {
 			model.DB.Exec("UPDATE t_course SET COURSE_STOCK = COURSE_STOCK - 1 where COURSE_ID = ?", cid)
 			//删除课表缓存
 			cache.RedisClient.HDel("GetStudentCourse", bookCourseVo.StudentID)
+			//删除消息
+			cache.RedisClient.XDel("BookCourseStream", val[0].Messages[0].ID)
 		}
-		//删除消息
-		cache.RedisClient.XDel("BookCourseStream", val[0].Messages[0].ID)
+
 	}
 }
