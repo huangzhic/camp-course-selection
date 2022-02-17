@@ -108,50 +108,48 @@ func CreateMemberValid(memberVo *vo.CreateMemberRequest) (code vo.ErrNo) {
 // GetMember 获取用户信息
 func (m *MemberService) GetMember(memberVo *vo.GetMemberRequest) (res vo.GetMemberResponse) {
 	var member model.TMember
-	tMember := vo.TMember{}
-	if err := model.DB.First(&member, memberVo.UserID).Error; err == nil {
-		if member.Status == 0 {
-			res.Code = vo.UserHasDeleted
-		} else {
-			res.Code = vo.OK
-			tMember.UserID = strconv.FormatInt(member.UserID, 10)
-			tMember.Username = member.UserName
-			tMember.Nickname = member.Nickname
-			tMember.UserType = vo.UserType(member.UserType)
-			res.Data = tMember
-		}
-	} else {
+	sid, _ := strconv.ParseInt(memberVo.UserID, 10, 64)
+	if err := model.DB.First(&member, sid).Error; err != nil {
 		res.Code = vo.UserNotExisted
+		return
 	}
+	if member.Status == constants.InActive {
+		res.Code = vo.UserHasDeleted
+		return
+	}
+	res.Code = vo.OK
+	res.Data.UserID = strconv.FormatInt(member.UserID, 10)
+	res.Data.Username = member.UserName
+	res.Data.Nickname = member.Nickname
+	res.Data.UserType = vo.UserType(member.UserType)
 	return
 }
 
 // GetMemberList 批量获取用户
 func (m *MemberService) GetMemberList(memberVo *vo.GetMemberListRequest) (res vo.GetMemberListResponse) {
 	memberList := make([]model.TMember, 0)
-	if err := model.DB.Limit(memberVo.Limit).Offset(memberVo.Offset).Find(&memberList); err != nil {
-		resMemberList := make([]vo.TMember, len(memberList))
-		for i := 0; i < len(memberList); i++ {
-			resMemberList[i].Username = memberList[i].UserName
-			resMemberList[i].Nickname = memberList[i].Nickname
-			resMemberList[i].UserType = vo.UserType(memberList[i].UserType)
-			resMemberList[i].UserID = strconv.FormatInt(memberList[i].UserID, 10)
-		}
-		res.Data.MemberList = resMemberList
-		res.Code = vo.OK
-	} else {
+	if err := model.DB.Limit(memberVo.Limit).Offset(memberVo.Offset).Find(&memberList).Error; err != nil {
 		res.Code = vo.ParamInvalid
 		res.Data.MemberList = nil
+		return
 	}
+	resMemberList := make([]vo.TMember, len(memberList))
+	for i := 0; i < len(memberList); i++ {
+		resMemberList[i].Username = memberList[i].UserName
+		resMemberList[i].Nickname = memberList[i].Nickname
+		resMemberList[i].UserType = vo.UserType(memberList[i].UserType)
+		resMemberList[i].UserID = strconv.FormatInt(memberList[i].UserID, 10)
+	}
+	res.Data.MemberList = resMemberList
+	res.Code = vo.OK
 	return
 }
 
-// 更新用户信息
-
+// UpdateMember 更新用户信息
 func (m *MemberService) UpdateMember(memberVo *vo.UpdateMemberRequest) (res vo.UpdateMemberResponse) {
 	var member model.TMember
-
-	if err := model.DB.First(&member, memberVo.UserID).Error; err != nil {
+	sid, _ := strconv.ParseInt(memberVo.UserID, 10, 64)
+	if err := model.DB.First(&member, sid).Error; err != nil {
 		res.Code = vo.UserNotExisted
 		return
 	}
@@ -172,8 +170,8 @@ func (m *MemberService) UpdateMember(memberVo *vo.UpdateMemberRequest) (res vo.U
 // DeleteMember 软删除
 func (m *MemberService) DeleteMember(memberVo *vo.DeleteMemberRequest) (res vo.DeleteMemberResponse) {
 	var member model.TMember
-
-	if err := model.DB.First(&member, memberVo.UserID).Error; err != nil {
+	sid, _ := strconv.ParseInt(memberVo.UserID, 10, 64)
+	if err := model.DB.First(&member, sid).Error; err != nil {
 		res.Code = vo.UserNotExisted
 		return
 	}
@@ -183,11 +181,10 @@ func (m *MemberService) DeleteMember(memberVo *vo.DeleteMemberRequest) (res vo.D
 		return
 	}
 
-	if err := model.DB.Model(&member).Update("status", constants.InActive).Error; err == nil {
-		res.Code = vo.OK
-	} else {
+	if err := model.DB.Model(&member).Update("status", constants.InActive).Error; err != nil {
 		res.Code = vo.UnknownError
+		return
 	}
-
+	res.Code = vo.OK
 	return
 }

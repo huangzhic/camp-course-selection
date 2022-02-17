@@ -24,11 +24,15 @@ func CreateMember(c *gin.Context) {
 
 //GetMember 获取用户信息接口
 func GetMember(c *gin.Context) {
+	res := vo.GetMemberResponse{}
 	var memberVo vo.GetMemberRequest
-	memberVo.UserID = c.Query("UserID")
-
-	res := memberSerivce.GetMember(&memberVo)
-	c.JSON(200, res)
+	if err := c.ShouldBind(&memberVo); err == nil {
+		res = memberSerivce.GetMember(&memberVo)
+		c.JSON(200, res)
+	} else {
+		res.Code = vo.UnknownError
+		c.JSON(200, res)
+	}
 }
 
 //GetMemberList 批量获取成员接口
