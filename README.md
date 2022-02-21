@@ -11,12 +11,6 @@ https://github.com/Gourouting/singo
 
 1. 加入了Snowflake算法以生成分布式ID。
 2. 将Session存入redis中，以支持分布式会话共享。
-3. 
-4. 
-5. 
-6. 
-7. 
-8. 
 
 
 本项目已经预先创建了一系列文件夹划分出下列模块:

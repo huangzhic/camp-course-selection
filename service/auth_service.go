@@ -1,6 +1,7 @@
 package service
 
 import (
+	"camp-course-selection/common/constants"
 	"camp-course-selection/model"
 	"camp-course-selection/vo"
 	"github.com/gin-contrib/sessions"
@@ -32,7 +33,7 @@ func (m *AuthService) Login(loginVo *vo.LoginRequest, c *gin.Context) (res vo.Lo
 		return
 	}
 
-	if member.Status != 1 {
+	if member.Status != constants.Active {
 		res.Code = vo.UserHasDeleted
 		return
 	}
