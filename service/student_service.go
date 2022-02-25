@@ -12,6 +12,11 @@ import (
 	"time"
 )
 
+const (
+	BookCourseLock   = "BookCourseLock:"
+	GetStudentCourse = "GetStudentCourse"
+)
+
 type StudentService struct {
 }
 
@@ -66,7 +71,7 @@ func (m *StudentService) BookCourse(v *vo.BookCourseRequest) (res vo.BookCourseR
 		return
 	}
 	//分布式锁防止重复请求 redis中的key格式 BookCourseLock:StudentID_CourseID
-	redisKey := "BookCourseLock:" + v.StudentID + "_" + v.CourseID
+	redisKey := BookCourseLock + v.StudentID + "_" + v.CourseID
 	b, err := cache.RedisClient.SetNX(redisKey, 1, time.Minute).Result()
 	if err != nil {
 		util.Log().Error("BookCourse SetNX Error : %v", err)
@@ -86,7 +91,7 @@ func (m *StudentService) BookCourse(v *vo.BookCourseRequest) (res vo.BookCourseR
 	//	cache.RedisClient.Set("CourseCap:"+v.CourseID, tc.CourseStock, 0)
 	//}
 	var num int64
-	num, err = cache.RedisClient.Decr("CourseCap:" + v.CourseID).Result()
+	num, err = cache.RedisClient.Decr(constants.CourseCap + v.CourseID).Result()
 	if num < 0 {
 		courseCapCache[v.CourseID] = false
 		res.Code = vo.CourseNotAvailable
@@ -122,7 +127,7 @@ func (m *StudentService) BookCourse(v *vo.BookCourseRequest) (res vo.BookCourseR
 
 func (m *StudentService) GetStudentCourse(v *vo.GetStudentCourseRequest) (res vo.GetStudentCourseResponse) {
 	//先查redis redis中的key格式 GetStudentCourse - StudentID
-	str, err := cache.RedisClient.HGet("GetStudentCourse", v.StudentID).Result()
+	str, err := cache.RedisClient.HGet(GetStudentCourse, v.StudentID).Result()
 	if str != "" {
 		res.Code = vo.OK
 		var slice []vo.TCourse
@@ -170,7 +175,7 @@ func (m *StudentService) GetStudentCourse(v *vo.GetStudentCourseRequest) (res vo
 	}
 	//缓存到redis中
 	data, _ := json.Marshal(courseList)
-	cache.RedisClient.HSet("GetStudentCourse", v.StudentID, string(data))
+	cache.RedisClient.HSet(GetStudentCourse, v.StudentID, string(data))
 	res.Code = vo.OK
 	res.Data.CourseList = courseList
 	return

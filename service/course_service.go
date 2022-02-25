@@ -2,6 +2,7 @@ package service
 
 import (
 	"camp-course-selection/cache"
+	"camp-course-selection/common/constants"
 	"camp-course-selection/common/util"
 	"camp-course-selection/model"
 	"camp-course-selection/vo"
@@ -36,7 +37,7 @@ func (m *CourService) CreateCourse(courseVo *vo.CreateCourseRequest) (res vo.Cre
 		res.Code = vo.OK
 		res.Data.CourseID = strconv.FormatInt(course.CourseID, 10)
 		//课程容量存入redis中 redis中的key格式 CourseCap:课程ID
-		cache.RedisClient.Set("CourseCap:"+res.Data.CourseID, courseVo.Cap, 0)
+		cache.RedisClient.Set(constants.CourseCap+res.Data.CourseID, courseVo.Cap, 0)
 	}
 	return
 }
